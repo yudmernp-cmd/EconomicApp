@@ -1,10 +1,17 @@
 // api/chat.js
 // Función serverless de Vercel. Aquí vive la API key de forma segura.
-// El navegador del usuario NUNCA ve esta clave.
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const MODELO = 'gemini-3.8-flash';
-console.log(' Modelo configurado:', MODELO);
+
+// Lista de modelos en orden de preferencia
+// Si uno falla, intenta con el siguiente
+const MODELOS = [
+  'gemini-3.8-flash',    // El más nuevo (recomendado por Google)
+  'gemini-2.5-flash',    // Fallback 1
+  'gemini-2.5-flash-lite', // Fallback 2 (más liviano)
+  'gemini-1.5-flash',    // Fallback 3 (más estable)
+  'gemini-1.5-pro',      // Fallback 4 (más potente, más lento)
+];
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero familiar para familias de Huánuco, Perú, con ingresos bajos.
@@ -25,13 +32,21 @@ CONTEXTO DEL USUARIO:
 {CONTEXTO}
 `.trim();
 
+// Hacer una llamada a UN modelo específico
+async function llamarModelo(modelo, body) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`;
+  return await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
 export default async function handler(req, res) {
-  // Solo aceptar POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  // Verificar que la key esté configurada
   if (!API_KEY) {
     return res.status(500).json({
       error: 'Falta configurar GEMINI_API_KEY en el servidor.',
@@ -59,41 +74,64 @@ export default async function handler(req, res) {
     },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent?key=${API_KEY}`;
+  // Probar cada modelo en orden
+  let ultimoError = null;
 
-  try {
-    const respuesta = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+  for (const modelo of MODELOS) {
+    try {
+      console.log(`🔍 Intentando con modelo: ${modelo}`);
+      const respuesta = await llamarModelo(modelo, body);
 
-    if (!respuesta.ok) {
-      const err = await respuesta.json().catch(() => ({}));
-      console.error('Error Gemini:', err);
+      // Caso: éxito
+      if (respuesta.ok) {
+        const data = await respuesta.json();
+        const texto =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
 
-      if (respuesta.status === 429) {
-        return res
-          .status(429)
-          .json({ error: 'Demasiadas consultas. Espera un momento.' });
+        if (!texto) {
+          console.warn(`Modelo ${modelo} respondió vacío, probando siguiente...`);
+          ultimoError = 'Respuesta vacía';
+          continue;
+        }
+
+        console.log(`✅ Respuesta exitosa con: ${modelo}`);
+        return res.status(200).json({
+          respuesta: texto,
+          modeloUsado: modelo,
+        });
       }
-      if (respuesta.status === 400 || respuesta.status === 403) {
+
+      // Caso: error de este modelo → probar siguiente
+      const err = await respuesta.json().catch(() => ({}));
+      const status = respuesta.status;
+      const mensaje = err?.error?.message || 'Error desconocido';
+
+      console.warn(
+        `⚠️ Modelo ${modelo} falló con ${status}: ${mensaje.slice(0, 100)}`
+      );
+      ultimoError = mensaje;
+
+      // Si es error de API key, no tiene sentido seguir probando
+      if (status === 400 || status === 401 || status === 403) {
         return res.status(500).json({ error: 'API key inválida.' });
       }
-      return res.status(500).json({ error: 'Error al consultar IA.' });
+
+      // Si es 404 (modelo no existe) o 503 (saturado) → probar siguiente
+      // Si es 429 (rate limit) → probar siguiente también
+      // Para cualquier otro error, seguimos probando por si acaso
+      continue;
+    } catch (error) {
+      console.error(`❌ Error inesperado con ${modelo}:`, error);
+      ultimoError = error.message;
+      continue;
     }
-
-    const data = await respuesta.json();
-    const texto =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-
-    if (!texto) {
-      return res.status(500).json({ error: 'Respuesta vacía.' });
-    }
-
-    return res.status(200).json({ respuesta: texto });
-  } catch (error) {
-    console.error('Error inesperado:', error);
-    return res.status(500).json({ error: 'Error inesperado.' });
   }
+
+  // Si llegamos aquí, TODOS los modelos fallaron
+  console.error('❌ Todos los modelos fallaron. Último error:', ultimoError);
+
+  return res.status(503).json({
+    error:
+      'El asistente está muy solicitado en este momento. Intenta de nuevo en unos minutos.',
+  });
 }
