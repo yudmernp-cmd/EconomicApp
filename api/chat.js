@@ -4,6 +4,7 @@
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const MODELO = 'gemini-2.5-flash';
+console.log(' Modelo configurado:', MODELO);
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero familiar para familias de Huánuco, Perú, con ingresos bajos.
