@@ -3,7 +3,7 @@
 // El navegador del usuario NUNCA ve esta clave.
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const MODELO = 'gemini-2.0-flash';
+const MODELO = 'gemini-2.5-flash';
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero familiar para familias de Huánuco, Perú, con ingresos bajos.
