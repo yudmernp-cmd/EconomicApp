@@ -3,7 +3,7 @@
 // El navegador del usuario NUNCA ve esta clave.
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const MODELO = 'gemini-2.5-flash';
+const MODELO = 'gemini-3.8-flash';
 console.log(' Modelo configurado:', MODELO);
 
 const SYSTEM_PROMPT = `
