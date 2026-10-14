@@ -1,57 +1,272 @@
+/* ===== DESIGN TOKENS ===== */
+:root {
+  /* Verdes */
+  --verde-900: #0F3D1A;
+  --verde-800: #1B5E20;
+  --verde-700: #2E7D32;
+  --verde-600: #388E3C;
+  --verde-500: #4CAF50;
+  --verde-300: #A5D6A7;
+  --verde-100: #E8F5E9;
+  --verde-50: #F1F8E9;
+
+  /* Estados */
+  --rojo-700: #C62828;
+  --rojo-500: #EF5350;
+  --rojo-100: #FFEBEE;
+  --amarillo-700: #F57F17;
+  --amarillo-500: #FFB300;
+  --amarillo-100: #FFF9C4;
+  --azul-700: #1565C0;
+  --azul-100: #E3F2FD;
+
+  /* Grises */
+  --gris-900: #1A1A1A;
+  --gris-800: #2C2C2C;
+  --gris-700: #424242;
+  --gris-500: #757575;
+  --gris-400: #9E9E9E;
+  --gris-300: #E0E0E0;
+  --gris-200: #EEEEEE;
+  --gris-100: #F5F5F5;
+  --gris-50: #FAFAFA;
+
+  /* Sombras */
+  --sombra-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sombra-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+  --sombra-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+  --sombra-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --sombra-xl: 0 12px 32px rgba(0, 0, 0, 0.14);
+  --sombra-verde: 0 6px 20px rgba(46, 125, 50, 0.25);
+
+  /* Radios */
+  --radio-sm: 8px;
+  --radio-md: 12px;
+  --radio-lg: 16px;
+  --radio-xl: 20px;
+  --radio-full: 999px;
+
+  /* Transiciones */
+  --trans-rapida: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --trans-media: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --trans-lenta: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --trans-rebote: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===== BASE ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: #f5f5f5;
-  color: #212121;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+  background-color: #ECEEF1;
+  color: var(--gris-800);
   font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ===== LAYOUT PRINCIPAL ===== */
 .app {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: var(--gris-50);
   display: flex;
   flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
 }
 
 .contenido {
   flex: 1;
-  padding: 16px;
-  padding-bottom: 80px;
+  padding: 20px 18px;
+  padding-bottom: 100px;
 }
 
+/* ===== TIPOGRAFÍA ===== */
 h1 {
-  font-size: 22px;
-  margin-bottom: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--gris-900);
+  margin-bottom: 6px;
 }
 
 h2 {
-  font-size: 18px;
-  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--gris-800);
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gris-800);
 }
 
 p {
   font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 8px;
+  line-height: 1.55;
+  color: var(--gris-700);
 }
 
+/* ===== BOTONES GLOBALES ===== */
 button {
-  font-size: 14px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: #2E7D32;
-  color: white;
+  font-family: inherit;
   cursor: pointer;
+  transition: all var(--trans-rapida);
+  border: none;
+  outline: none;
 }
 
-button:hover {
-  background-color: #1B5E20;
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+/* ===== ANIMACIONES GLOBALES ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulso {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.75;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(76, 175, 80, 0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ===== UTILIDADES ===== */
+.anim-fadeIn {
+  animation: fadeIn var(--trans-media) ease;
+}
+
+.anim-fadeInUp {
+  animation: fadeInUp var(--trans-media) ease;
+}
+
+.anim-fadeInScale {
+  animation: fadeInScale var(--trans-media) ease;
+}
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--gris-200) 0%,
+    var(--gris-100) 50%,
+    var(--gris-200) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radio-sm);
+}
+
+/* Scrollbar refinado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gris-300);
+  border-radius: var(--radio-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gris-400);
 }
