@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { usePerfil, useMovimientos, useDeudas } from '../storage.js';
 import Card from '../components/Card.jsx';
 import './Perfil.css';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const CICLOS = [
   { id: 'semanal', label: 'Cada semana' },
@@ -15,6 +16,7 @@ function Perfil() {
   const [, setMovimientos] = useMovimientos();
   const [, setDeudas] = useDeudas();
   const [guardado, setGuardado] = useState(false);
+  const { usuario, cerrarSesion } = useAuth();
 
   const [form, setForm] = useState(perfil);
 
@@ -139,6 +141,22 @@ function Perfil() {
         <p className="advertencia">
           Esto eliminará movimientos, deudas y lecciones completadas.
         </p>
+      </Card>
+            <Card>
+        <div className="perfil-usuario">
+          <span className="perfil-usuario-label">Cuenta:</span>
+          <span className="perfil-usuario-email">{usuario?.email}</span>
+        </div>
+        <button
+          className="boton-peligro"
+          onClick={() => {
+            if (confirm('¿Cerrar sesión?')) {
+              cerrarSesion();
+            }
+          }}
+        >
+          Cerrar sesión
+        </button>
       </Card>
 
       <p className="version">Finanzas Familiar · v1.0 · Proyecto académico</p>
