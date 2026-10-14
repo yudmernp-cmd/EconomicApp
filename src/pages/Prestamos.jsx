@@ -7,7 +7,8 @@ import {
   calcularPrestamo,
   calcularTotalDeudas,
 } from '../storage.js';
-import { buscarPrestamista, evaluarRiesgo } from '../simulador.js';
+import { evaluarRiesgo } from '../simulador.js';
+import { buscarPrestamista, TIPOS } from '../utils/prestamistas.js';
 import { formatearSoles } from '../utils/formatos.js';
 import Card from '../components/Card.jsx';
 import Semaforo from '../components/Semaforo.jsx';
@@ -252,8 +253,7 @@ function Prestamos() {
             {labelFrecuencia === 'mensual'
               ? 'al mes'
               : `de forma ${labelFrecuencia}`}{' '}
-            durante <strong>{resultado.duracion}</strong>{' '}
-            {labelUnidad}.
+            durante <strong>{resultado.duracion}</strong> {labelUnidad}.
           </p>
         </Card>
       )}
@@ -396,39 +396,144 @@ function Prestamos() {
       )}
 
       {/* ====== BUSCAR PRESTAMISTA ====== */}
-      <h2 className="seccion-titulo">Buscar prestamista</h2>
+      <h2 className="seccion-titulo">Verificar prestamista</h2>
       <p className="seccion-desc">
-        Verifica antes de aceptar un préstamo.
+        Antes de aceptar un préstamo, verifica si es seguro.
       </p>
 
       <Card>
-        <input
-          type="text"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          placeholder="Escribe el nombre..."
-          className="campo-input"
-        />
+        <div className="buscador-input">
+          <svg
+            className="buscador-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              cx="11"
+              cy="11"
+              r="7"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <path
+              d="M20 20L16.5 16.5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Ej: Caja Huancayo, BCP, gota a gota..."
+            className="buscador-campo"
+            maxLength={50}
+          />
+          {busqueda && (
+            <button
+              type="button"
+              className="buscador-limpiar"
+              onClick={() => setBusqueda('')}
+              aria-label="Limpiar"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </Card>
 
-      {busqueda.trim() !== '' && (
+      {/* Sugerencias cuando no hay búsqueda */}
+      {busqueda.trim().length < 2 && (
+        <div className="buscador-sugerencias">
+          <p className="sugerencias-titulo">Búsquedas comunes:</p>
+          <div className="sugerencias-chips">
+            {['Caja Huancayo', 'BCP', 'Mibanco', 'Gota a gota'].map((s) => (
+              <button
+                key={s}
+                className="sugerencia-chip"
+                onClick={() => setBusqueda(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Resultados */}
+      {busqueda.trim().length >= 2 && (
         <>
           {resultados.length === 0 ? (
-            <p className="vacio">
-              No lo encontramos. Ten mucho cuidado con prestamistas
-              desconocidos.
-            </p>
+            <Card className="card-alerta">
+              <div className="estado-encabezado">
+                <span className="icono-alerta">⚠️</span>
+                <span className="resultado-titulo">No lo encontramos</span>
+              </div>
+              <p className="prestamista-nota">
+                No tenemos registros de "{busqueda}". Ten mucho cuidado con
+                prestamistas que no conoces. Antes de aceptar, verifica en el
+                portal de la SBS: <strong>www.sbs.gob.pe</strong>
+              </p>
+            </Card>
           ) : (
             <div className="lista-prestamistas">
-              {resultados.map((p, i) => (
-                <Card key={i} className={`card-${p.estado}`}>
-                  <div className="estado-encabezado">
-                    <Semaforo estado={p.estado} />
-                    <span className="resultado-titulo">{p.nombre}</span>
-                  </div>
-                  <p className="prestamista-nota">{p.nota}</p>
-                </Card>
-              ))}
+              {resultados.map((p, i) => {
+                const tipo = TIPOS[p.tipo] || TIPOS.informal;
+                return (
+                  <Card
+                    key={i}
+                    className={`card-prestamista prestamista-${p.estado}`}
+                    animDelay={i * 60}
+                  >
+                    <div className="prestamista-header">
+                      <div className="prestamista-titulo">
+                        <span className="prestamista-icono">
+                          {tipo.icono}
+                        </span>
+                        <div className="prestamista-info">
+                          <span className="prestamista-nombre">
+                            {p.nombre}
+                          </span>
+                          <span className="prestamista-tipo">
+                            {tipo.label}
+                          </span>
+                        </div>
+                      </div>
+                      <Semaforo estado={p.estado} />
+                    </div>
+
+                    {p.tasa && (
+                      <div className="prestamista-tasa">
+                        <span className="tasa-label">Tasa aproximada:</span>
+                        <span className="tasa-valor">{p.tasa}</span>
+                      </div>
+                    )}
+
+                    <p className="prestamista-nota">{p.nota}</p>
+
+                    {p.web && (
+                      <a
+                        href={p.web}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="prestamista-link"
+                      >
+                        Visitar sitio oficial →
+                      </a>
+                    )}
+
+                    {p.estado === 'rojo' && (
+                      <div className="prestamista-alerta">
+                        ⚠️ Evita este prestamista. Puede hacerte daño
+                        económico y personal.
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </>
