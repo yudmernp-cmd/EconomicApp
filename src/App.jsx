@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import RutaProtegida from './components/RutaProtegida.jsx';
 import Navbar from './components/Navbar.jsx';
 import AsistenteBurbuja from './components/AsistenteBurbuja.jsx';
-import Login from './pages/login.jsx';
+import Login from './pages/Login.jsx';
 import Inicio from './pages/Inicio.jsx';
 import MiPlata from './pages/MiPlata.jsx';
 import Prestamos from './pages/Prestamos.jsx';
