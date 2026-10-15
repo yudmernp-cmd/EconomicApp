@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import RutaProtegida from './components/RutaProtegida.jsx';
 import Navbar from './components/Navbar.jsx';
 import AsistenteBurbuja from './components/AsistenteBurbuja.jsx';
+import SplashScreen from './components/SplashScreen.jsx';
 import Login from './pages/Login.jsx';
 import Inicio from './pages/Inicio.jsx';
 import MiPlata from './pages/MiPlata.jsx';
@@ -38,15 +39,9 @@ function AppContenido() {
   const location = useLocation();
 
   if (cargando) {
-    return (
-      <div className="cargando-app">
-        <div className="cargando-spinner"></div>
-        <p className="cargando-texto">Cargando...</p>
-      </div>
-    );
+    return <SplashScreen mensaje="Preparando tu familia..." />;
   }
 
-  // Si está en /login y ya tiene sesión → redirige al inicio
   if (location.pathname === '/login' && usuario) {
     return <Navigate to="/" replace />;
   }

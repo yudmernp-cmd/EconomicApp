@@ -1,24 +1,36 @@
-/* ===== DESIGN TOKENS ===== */
+/* ===== DESIGN TOKENS - Cuadra tus Lucas ===== */
 :root {
-  /* Verdes */
-  --verde-900: #0F3D1A;
-  --verde-800: #1B5E20;
-  --verde-700: #2E7D32;
-  --verde-600: #388E3C;
+  /* Verdes principales */
+  --verde-900: #0A3D24;
+  --verde-800: #0F5132;  /* Principal */
+  --verde-700: #1B6B3F;
+  --verde-600: #2E8B57;
   --verde-500: #4CAF50;
   --verde-300: #A5D6A7;
-  --verde-100: #E8F5E9;
-  --verde-50: #F1F8E9;
+  --verde-200: #C8E6C9;
+  --verde-100: #E3F2E6;
+  --verde-50: #F0F8F2;
 
-  /* Estados */
+  /* Amarillos */
+  --amarillo-700: #C49B1E;
+  --amarillo-500: #F8D548;
+  --amarillo-300: #FBE58A;
+  --amarillo-100: #FEF7DB;
+
+  /* Estado */
   --rojo-700: #C62828;
   --rojo-500: #EF5350;
   --rojo-100: #FFEBEE;
-  --amarillo-700: #F57F17;
-  --amarillo-500: #FFB300;
-  --amarillo-100: #FFF9C4;
-  --azul-700: #1565C0;
-  --azul-100: #E3F2FD;
+  --naranja-500: #F59E0B;
+  --naranja-100: #FEF3C7;
+  --azul-600: #3B82F6;
+  --azul-100: #DBEAFE;
+  --purpura-600: #8B5CF6;
+  --purpura-100: #EDE9FE;
+
+  /* Crema / fondo */
+  --crema: #F8F7F2;
+  --crema-oscuro: #EFEEE6;
 
   /* Grises */
   --gris-900: #1A1A1A;
@@ -29,21 +41,20 @@
   --gris-300: #E0E0E0;
   --gris-200: #EEEEEE;
   --gris-100: #F5F5F5;
-  --gris-50: #FAFAFA;
 
   /* Sombras */
   --sombra-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --sombra-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
-  --sombra-md: 0 4px 12px rgba(0, 0, 0, 0.07);
-  --sombra-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
-  --sombra-xl: 0 12px 32px rgba(0, 0, 0, 0.14);
-  --sombra-verde: 0 6px 20px rgba(46, 125, 50, 0.25);
+  --sombra-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --sombra-md: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --sombra-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+  --sombra-verde: 0 8px 24px rgba(15, 81, 50, 0.28);
 
   /* Radios */
-  --radio-sm: 8px;
-  --radio-md: 12px;
-  --radio-lg: 16px;
-  --radio-xl: 20px;
+  --radio-sm: 10px;
+  --radio-md: 14px;
+  --radio-lg: 18px;
+  --radio-xl: 24px;
+  --radio-2xl: 32px;
   --radio-full: 999px;
 
   /* Transiciones */
@@ -66,9 +77,9 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', sans-serif;
-  background-color: #ECEEF1;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+  background-color: var(--crema);
   color: var(--gris-800);
   font-size: 14px;
   line-height: 1.5;
@@ -76,16 +87,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== LAYOUT PRINCIPAL ===== */
+/* ===== LAYOUT ===== */
 .app {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: var(--gris-50);
+  background-color: var(--crema);
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
 }
 
 .contenido {
@@ -96,24 +106,28 @@ body {
 
 /* ===== TIPOGRAFÍA ===== */
 h1 {
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--gris-900);
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--verde-800);
   margin-bottom: 6px;
+  line-height: 1.15;
 }
 
 h2 {
+  font-family: 'Poppins', sans-serif;
   font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-  color: var(--gris-800);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--verde-800);
   margin-bottom: 12px;
 }
 
 h3 {
+  font-family: 'Poppins', sans-serif;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--gris-800);
 }
 
@@ -123,13 +137,14 @@ p {
   color: var(--gris-700);
 }
 
-/* ===== BOTONES GLOBALES ===== */
+/* ===== BOTONES ===== */
 button {
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: all var(--trans-rapida);
   border: none;
   outline: none;
+  font-weight: 600;
 }
 
 button:active:not(:disabled) {
@@ -144,18 +159,14 @@ button:disabled {
 input,
 textarea,
 select {
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
   font-size: 14px;
 }
 
 /* ===== ANIMACIONES GLOBALES ===== */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fadeInUp {
@@ -180,17 +191,6 @@ select {
   }
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 @keyframes pulso {
   0%, 100% {
     transform: scale(1);
@@ -212,47 +212,58 @@ select {
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -400px 0;
-  }
-  100% {
-    background-position: 400px 0;
-  }
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* ===== UTILIDADES ===== */
-.anim-fadeIn {
-  animation: fadeIn var(--trans-media) ease;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-.anim-fadeInUp {
-  animation: fadeInUp var(--trans-media) ease;
+@keyframes walletBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
 }
 
-.anim-fadeInScale {
-  animation: fadeInScale var(--trans-media) ease;
+@keyframes drawCheck {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
 }
 
-/* Skeleton loader */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--gris-200) 0%,
-    var(--gris-100) 50%,
-    var(--gris-200) 100%
-  );
-  background-size: 800px 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: var(--radio-sm);
+/* ===== SPINNER ===== */
+.cargando-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+  background-color: var(--crema);
 }
 
-/* Scrollbar refinado */
+.cargando-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--verde-100);
+  border-top-color: var(--verde-800);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.cargando-texto {
+  font-size: 13px;
+  color: var(--verde-800);
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -265,38 +276,4 @@ select {
 ::-webkit-scrollbar-thumb {
   background: var(--gris-300);
   border-radius: var(--radio-full);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gris-400);
-}
-.cargando-app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: 16px;
-  background-color: var(--gris-50);
-}
-
-.cargando-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--verde-100);
-  border-top-color: var(--verde-700);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.cargando-texto {
-  font-size: 13px;
-  color: var(--gris-500);
-  margin: 0;
 }

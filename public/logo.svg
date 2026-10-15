@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Billetera verde -->
+  <path d="M20 35C20 31.6863 22.6863 29 26 29H74C77.3137 29 80 31.6863 80 35V75C80 78.3137 77.3137 81 74 81H26C22.6863 81 20 78.3137 20 75V35Z" fill="#0F5132"/>
+  <!-- Billetera parte superior (solapa) -->
+  <path d="M20 35C20 31.6863 22.6863 29 26 29H74C77.3137 29 80 31.6863 80 35V45H20V35Z" fill="#1B6B3F"/>
+  <!-- Cierre -->
+  <circle cx="72" cy="63" r="5" fill="#F8D548"/>
+  <circle cx="72" cy="63" r="2" fill="#0F5132"/>
+  <!-- Billete amarillo asomando -->
+  <path d="M35 29V22C35 19.7909 36.7909 18 39 18H61C63.2091 18 65 19.7909 65 22V29" fill="#F8D548" stroke="#0F5132" stroke-width="1.5"/>
+  <!-- Billete verde claro -->
+  <path d="M30 29V24C30 22.3431 31.3431 21 33 21H42V29" fill="#8DC63F" stroke="#0F5132" stroke-width="1.5"/>
+  <!-- Líneas de movimiento -->
+  <path d="M82 25L87 20M85 30H90M82 38L87 43" stroke="#0F5132" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
