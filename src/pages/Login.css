@@ -301,3 +301,48 @@
   color: var(--verde-800);
   background: none;
 }
+/* Botón de Google */
+.login-google {
+  width: 100%;
+  padding: 14px;
+  background-color: #ffffff;
+  color: var(--gris-800);
+  border: 1.5px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: var(--sombra-xs);
+  transition: all var(--trans-rapida);
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-google:hover {
+  background-color: var(--gris-50);
+  border-color: var(--gris-300);
+}
+
+.login-google:active {
+  transform: scale(0.98);
+}
+
+/* Eslogan final decorativo */
+.login-eslogan-final {
+  text-align: center;
+  font-size: 11px;
+  color: var(--gris-400);
+  font-style: italic;
+  margin-top: 30px;
+  line-height: 1.5;
+  padding: 0 20px;
+}
+
+.login-eslogan-final em {
+  color: var(--verde-700);
+  font-weight: 600;
+  font-style: italic;
+}
