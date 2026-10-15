@@ -5,30 +5,29 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--gris-200);
+  background-color: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   justify-content: space-around;
-  padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+  padding: 10px 6px calc(10px + env(safe-area-inset-bottom, 0px));
   z-index: 100;
-  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .navbar-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   text-decoration: none;
   color: var(--gris-400);
-  padding: 6px 10px;
-  border-radius: var(--radio-md);
+  padding: 6px 8px;
   transition: all var(--trans-rapida);
   position: relative;
   flex: 1;
-  max-width: 76px;
+  max-width: 78px;
+  background: none;
+  border: none;
 }
 
 .navbar-item:active {
@@ -36,57 +35,36 @@
 }
 
 .navbar-item.activo {
-  color: var(--verde-700);
+  color: var(--verde-800);
 }
 
 .navbar-icono {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   transition: transform var(--trans-rebote);
 }
 
 .navbar-item.activo .navbar-icono {
-  transform: translateY(-1px) scale(1.08);
   animation: navPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes navPop {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-3px) scale(1.18);
-  }
-  100% {
-    transform: translateY(-1px) scale(1.08);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 .navbar-label {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: -0.1px;
   transition: all var(--trans-rapida);
 }
 
 .navbar-item.activo .navbar-label {
-  font-weight: 600;
-  color: var(--verde-800);
-}
-
-/* Puntito indicador debajo del ítem activo */
-.navbar-item.activo::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background-color: var(--verde-700);
-  border-radius: 50%;
-  animation: fadeInScale 300ms ease;
+  font-weight: 700;
+  color: var(--verde-900);
 }
