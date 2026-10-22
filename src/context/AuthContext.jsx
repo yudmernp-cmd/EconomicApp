@@ -17,8 +17,14 @@ export function AuthProvider({ children }) {
     // Escuchar cambios de auth
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUsuario(session?.user ?? null);
+
+      // 🔥 EL SALVAVIDAS: Si Supabase detecta que es un enlace de recuperación,
+      // forzamos el hash de la URL a la pantalla de actualizar contraseña.
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.hash = '#/actualizar-password';
+      }
     });
 
     return () => subscription.unsubscribe();

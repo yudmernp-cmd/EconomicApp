@@ -46,13 +46,12 @@ function AppContenido() {
     );
   }
 
-  // 🔥 EL TRUCO: Si estamos en actualizar-password, le damos prioridad total.
-  // Ignoramos si hay usuario o no, para que no nos expulse.
-  if (location.pathname === '/actualizar-password') {
+  // 🔥 Usamos .includes() en lugar de === 
+  // Así detecta la ruta aunque venga con el token pegado (ej: /actualizar-password#access_token...)
+  if (location.pathname.includes('/actualizar-password')) {
     return <ActualizarPassword />;
   }
 
-  // Redirigir si ya está logueado e intenta ir al login
   if (location.pathname === '/login' && usuario) {
     return <Navigate to="/" replace />;
   }
