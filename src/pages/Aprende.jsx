@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LECCIONES } from '../utils/lecciones.js';
+import { LECCIONES } from '../utils/Lecciones.js';
 import { useLocalStorage } from '../hooks/useLocalStorage.js';
 import Card from '../components/Card.jsx';
 import './Aprende.css';
