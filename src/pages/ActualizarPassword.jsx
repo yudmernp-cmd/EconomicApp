@@ -15,30 +15,38 @@ function ActualizarPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. Verificar si ya hay una sesión activa
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSesionValida(true);
-      }
-      setVerificando(false);
-    });
+    let isMounted = true;
 
-    // 2. Escuchar el evento de recuperación de contraseña
+    const verificarSesion = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        if (isMounted) {
+          setSesionValida(true);
+          setVerificando(false);
+        }
+      } else {
+        // Si no hay sesión, le damos 2 segundos a Supabase para que lea el enlace
+        const timer = setTimeout(() => {
+          if (isMounted) setVerificando(false);
+        }, 2000);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    verificarSesion();
+
+    // Escuchamos si Supabase crea la sesión mientras estamos en esta pantalla
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || session) {
+      if (session && isMounted) {
         setSesionValida(true);
         setVerificando(false);
       }
     });
 
-    // 3. Temporizador de seguridad: Si en 2 segundos no hay sesión, muestra el error
-    const timer = setTimeout(() => {
-      setVerificando(false);
-    }, 2000);
-
     return () => {
+      isMounted = false;
       authListener.subscription.unsubscribe();
-      clearTimeout(timer);
     };
   }, []);
 
@@ -60,13 +68,18 @@ function ActualizarPassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password: password });
       if (error) throw error;
-      setExito('¡Contraseña actualizada! Redirigiendo al inicio...');
+      
+      setExito('¡Contraseña actualizada! Serás redirigido al login.');
+      
+      // Cerramos sesión para que tenga que entrar con su nueva clave
+      await supabase.auth.signOut();
+      
       setTimeout(() => {
-        navigate('/');
-      }, 2000);
+        navigate('/login');
+      }, 2500);
+
     } catch (err) {
       setError(err.message || 'Error al actualizar la contraseña.');
-    } finally {
       setCargando(false);
     }
   };

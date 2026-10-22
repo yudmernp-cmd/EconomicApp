@@ -15,7 +15,6 @@ import './App.css';
 
 function LayoutPrivado() {
   const location = useLocation();
-
   return (
     <div className="app">
       <main className="contenido">
@@ -47,6 +46,13 @@ function AppContenido() {
     );
   }
 
+  // 🔥 EL TRUCO: Si estamos en actualizar-password, le damos prioridad total.
+  // Ignoramos si hay usuario o no, para que no nos expulse.
+  if (location.pathname === '/actualizar-password') {
+    return <ActualizarPassword />;
+  }
+
+  // Redirigir si ya está logueado e intenta ir al login
   if (location.pathname === '/login' && usuario) {
     return <Navigate to="/" replace />;
   }
@@ -56,10 +62,6 @@ function AppContenido() {
       <Route path="/login" element={<Login />} />
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
       
-      {/* Ruta libre de protección para que reciba el token de Supabase */}
-      <Route path="/actualizar-password" element={<ActualizarPassword />} />
-      
-      {/* El resto de la app SÍ está protegida */}
       <Route
         path="/*"
         element={
