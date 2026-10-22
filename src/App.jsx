@@ -3,8 +3,9 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import RutaProtegida from './components/RutaProtegida.jsx';
 import Navbar from './components/Navbar.jsx';
 import AsistenteBurbuja from './components/AsistenteBurbuja.jsx';
-import SplashScreen from './components/SplashScreen.jsx';
 import Login from './pages/Login.jsx';
+import RecuperarPassword from './pages/RecuperarPassword.jsx'; // NUEVO
+import ActualizarPassword from './pages/ActualizarPassword.jsx'; // NUEVO
 import Inicio from './pages/Inicio.jsx';
 import MiPlata from './pages/MiPlata.jsx';
 import Prestamos from './pages/Prestamos.jsx';
@@ -12,9 +13,10 @@ import Aprende from './pages/Aprende.jsx';
 import Perfil from './pages/Perfil.jsx';
 import './App.css';
 
+// ... (LayoutPrivado y AppContenido se mantienen igual, solo asegúrate de agregar las rutas en AppContenido)
+
 function LayoutPrivado() {
   const location = useLocation();
-
   return (
     <div className="app">
       <main className="contenido">
@@ -39,7 +41,7 @@ function AppContenido() {
   const location = useLocation();
 
   if (cargando) {
-    return <SplashScreen mensaje="Preparando tu familia..." />;
+    return <div className="cargando-app"><div className="cargando-spinner"></div></div>;
   }
 
   if (location.pathname === '/login' && usuario) {
@@ -49,6 +51,8 @@ function AppContenido() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/recuperar-password" element={<RecuperarPassword />} /> {/* NUEVO */}
+      <Route path="/actualizar-password" element={<ActualizarPassword />} /> {/* NUEVO */}
       <Route
         path="/*"
         element={

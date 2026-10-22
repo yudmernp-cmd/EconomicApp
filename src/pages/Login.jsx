@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import './Login.css';
+import { Link } from 'react-router-dom';
 
 function Login() {
   const [modo, setModo] = useState('login'); // 'login' | 'registro' | 'crear-password-google'
@@ -260,11 +261,10 @@ function Login() {
 
           {/* OLVIDÉ MI CONTRASEÑA (SOLO EN LOGIN) */}
           {modo === 'login' && (
-            <button type="button" className="login-olvide">
-              ¿Olvidaste tu contraseña?
-            </button>
+            <Link to="/recuperar-password" className="login-olvide" style={{ textDecoration: 'none' }}>
+               ¿Olvidaste tu contraseña?
+            </Link>
           )}
-        </form>
 
         {/* BOTÓN DE GOOGLE (OCULTO EN MODO CREAR PASS) */}
         {modo !== 'crear-password-google' && (
