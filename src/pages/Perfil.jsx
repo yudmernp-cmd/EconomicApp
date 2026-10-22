@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { usePerfil, useMovimientos, useDeudas } from '../storage.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import Card from '../components/Card.jsx';
 import './Perfil.css';
-import { useAuth } from '../context/AuthContext.jsx';
 
 const CICLOS = [
-  { id: 'semanal', label: 'Cada semana' },
-  { id: 'quincenal', label: 'Cada 15 días' },
-  { id: 'mensual', label: 'Cada mes' },
-  { id: 'irregular', label: 'Cuando puedo' },
+  { id: 'semanal', label: 'Semanal' }, { id: 'quincenal', label: 'Quincenal' },
+  { id: 'mensual', label: 'Mensual' }, { id: 'irregular', label: 'Irregular' },
 ];
 
 function Perfil() {
@@ -17,12 +15,9 @@ function Perfil() {
   const [, setDeudas] = useDeudas();
   const [guardado, setGuardado] = useState(false);
   const { usuario, cerrarSesion } = useAuth();
-
   const [form, setForm] = useState(perfil);
 
-  useEffect(() => {
-    setForm(perfil);
-  }, [perfil]);
+  useEffect(() => { setForm(perfil); }, [perfil]);
 
   const guardar = (e) => {
     e.preventDefault();
@@ -32,136 +27,72 @@ function Perfil() {
   };
 
   const borrarTodo = () => {
-    if (
-      confirm(
-        '¿Seguro que quieres borrar TODOS tus datos? Esto no se puede deshacer.'
-      )
-    ) {
-      setMovimientos([]);
-      setDeudas([]);
+    if (confirm('¿Borrar TODOS tus datos? Esto no se puede deshacer.')) {
+      setMovimientos([]); setDeudas([]);
       localStorage.removeItem('finanzas_lecciones_vistas');
-      alert('Datos borrados correctamente.');
+      alert('Datos borrados.');
     }
   };
 
   return (
-    <div>
+    <div className="perfil-contenedor">
       <h1>Perfil</h1>
-      <p className="subtitulo">Datos de tu familia y configuración</p>
+      <p className="perfil-subtitulo">Datos de tu familia y configuración.</p>
 
       <Card>
-        <form onSubmit={guardar}>
-          <label className="campo">
-            <span className="campo-label">Nombre de la familia</span>
-            <input
-              type="text"
-              value={form.nombreFamilia}
-              onChange={(e) =>
-                setForm({ ...form, nombreFamilia: e.target.value })
-              }
-              className="campo-input"
-              maxLength={30}
-            />
-          </label>
+        <div className="perfil-usuario-info">
+          <div className="perfil-avatar">{usuario?.email?.charAt(0).toUpperCase()}</div>
+          <div>
+            <span className="perfil-email">{usuario?.email}</span>
+            <span className="perfil-cuenta-label">Cuenta activa</span>
+          </div>
+        </div>
+      </Card>
 
-          <label className="campo">
-            <span className="campo-label">Número de integrantes</span>
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={form.integrantes}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  integrantes: parseInt(e.target.value) || 1,
-                })
-              }
-              className="campo-input"
-            />
+      <h2 className="perfil-seccion-titulo">Datos de la familia</h2>
+      <Card>
+        <form onSubmit={guardar} className="perfil-form">
+          <label className="perfil-campo">
+            <span className="perfil-label">Nombre de la familia</span>
+            <input type="text" value={form.nombreFamilia} onChange={(e) => setForm({ ...form, nombreFamilia: e.target.value })} className="perfil-input" />
           </label>
-
-          <span className="campo-label">¿Cada cuánto recibes dinero?</span>
-          <div className="ciclos">
+          <label className="perfil-campo">
+            <span className="perfil-label">Integrantes</span>
+            <input type="number" min="1" max="20" value={form.integrantes} onChange={(e) => setForm({ ...form, integrantes: parseInt(e.target.value) || 1 })} className="perfil-input" />
+          </label>
+          
+          <span className="perfil-label">Frecuencia de ingresos</span>
+          <div className="perfil-ciclos">
             {CICLOS.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className={
-                  form.cicloIngreso === c.id
-                    ? 'ciclo-btn activo'
-                    : 'ciclo-btn'
-                }
-                onClick={() => setForm({ ...form, cicloIngreso: c.id })}
-              >
+              <button key={c.id} type="button" className={form.cicloIngreso === c.id ? 'perfil-btn-ciclo activo' : 'perfil-btn-ciclo'} onClick={() => setForm({ ...form, cicloIngreso: c.id })}>
                 {c.label}
               </button>
             ))}
           </div>
 
-          <label className="campo">
-            <span className="campo-label">
-              Ingreso aproximado por ciclo (S/)
-            </span>
-            <input
-              type="number"
-              step="0.10"
-              min="0"
-              value={form.ingresoEstimado}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  ingresoEstimado: parseFloat(e.target.value) || 0,
-                })
-              }
-              placeholder="Ej: 500"
-              className="campo-input"
-            />
-            <span className="campo-ayuda">
-              Nos ayuda a calcular mejor tu presupuesto.
-            </span>
+          <label className="perfil-campo" style={{ marginTop: '12px' }}>
+            <span className="perfil-label">Ingreso aprox. por ciclo (S/)</span>
+            <input type="number" value={form.ingresoEstimado} onChange={(e) => setForm({ ...form, ingresoEstimado: parseFloat(e.target.value) || 0 })} className="perfil-input" />
           </label>
 
-          <button type="submit" className="boton-guardar">
-            Guardar cambios
-          </button>
-
-          {guardado && (
-            <p className="mensaje-guardado">✓ Cambios guardados</p>
-          )}
+          <button type="submit" className="perfil-btn-guardar">Guardar Cambios</button>
+          {guardado && <span className="perfil-guardado-msg">✓ Guardado</span>}
         </form>
       </Card>
 
-      <h2 className="seccion-titulo">Datos</h2>
-
+      <h2 className="perfil-seccion-titulo">Cuenta y Seguridad</h2>
       <Card>
-        <button className="boton-peligro" onClick={borrarTodo}>
-          Borrar todos mis datos
-        </button>
-        <p className="advertencia">
-          Esto eliminará movimientos, deudas y lecciones completadas.
-        </p>
-      </Card>
-            <Card>
-        <div className="perfil-usuario">
-          <span className="perfil-usuario-label">Cuenta:</span>
-          <span className="perfil-usuario-email">{usuario?.email}</span>
-        </div>
-        <button
-          className="boton-peligro"
-          onClick={() => {
-            if (confirm('¿Cerrar sesión?')) {
-              cerrarSesion();
-            }
-          }}
-        >
+        <button className="perfil-btn-logout" onClick={() => confirm('¿Cerrar sesión?') && cerrarSesion()}>
           Cerrar sesión
         </button>
+        <button className="perfil-btn-peligro" onClick={borrarTodo}>
+          Borrar todos mis datos locales
+        </button>
+        <p className="perfil-advertencia">Esto eliminará movimientos, deudas y lecciones guardadas en este dispositivo.</p>
       </Card>
-
-      <p className="version">Finanzas Familiar · v1.0 · Proyecto académico</p>
+      
+      <p className="perfil-version">Cuadra tus Lucas · v1.0</p>
     </div>
   );
 }
-
-export default Perfil;
+export default Perfil;  
