@@ -10,16 +10,30 @@ function ActualizarPassword() {
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
   const [cargando, setCargando] = useState(false);
-  const [sesionValida, setSesionValida] = useState(true);
+  const [sesionValida, setSesionValida] = useState(false); // Iniciamos en falso hasta comprobar
+  const [verificando, setVerificando] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Supabase inyecta la sesión automáticamente si el enlace es válido
+    // 1. Verificar si ya hay una sesión activa (por si recargan la página)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setSesionValida(false);
+      if (session) {
+        setSesionValida(true);
       }
+      setVerificando(false);
     });
+
+    // 2. Escuchar el evento de autenticación (cuando Supabase lee el token del correo)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setSesionValida(true);
+      }
+      setVerificando(false);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const enviar = async (e) => {
@@ -40,7 +54,7 @@ function ActualizarPassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password: password });
       if (error) throw error;
-      setExito('¡Contraseña actualizada! Redirigiendo...');
+      setExito('¡Contraseña actualizada! Redirigiendo al inicio...');
       setTimeout(() => {
         navigate('/');
       }, 2000);
@@ -51,14 +65,25 @@ function ActualizarPassword() {
     }
   };
 
+  if (verificando) {
+    return (
+      <div className="login-pantalla">
+        <div className="cargando-app" style={{ background: 'transparent' }}>
+          <div className="cargando-spinner"></div>
+          <p className="cargando-texto">Verificando enlace...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!sesionValida) {
     return (
       <div className="login-pantalla">
         <div className="login-contenido" style={{ textAlign: 'center' }}>
           <h2 className="login-subtitulo">Enlace inválido o expirado</h2>
           <p className="login-descripcion">Por favor, solicita un nuevo enlace de recuperación.</p>
-          <button className="login-boton" onClick={() => navigate('/login')}>
-            Volver al Login
+          <button className="login-boton" onClick={() => navigate('/recuperar-password')}>
+            Solicitar nuevo enlace
           </button>
         </div>
       </div>
