@@ -47,12 +47,6 @@ function AppContenido() {
     );
   }
 
-  // EXCEPCIÓN: Si estamos en /actualizar-password, NO importa si hay usuario, 
-  // lo dejamos pasar a la pantalla para que cambie su clave.
-  if (location.pathname === '/actualizar-password') {
-    return <ActualizarPassword />;
-  }
-
   if (location.pathname === '/login' && usuario) {
     return <Navigate to="/" replace />;
   }
@@ -62,7 +56,10 @@ function AppContenido() {
       <Route path="/login" element={<Login />} />
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
       
-      {/* El resto de la app va aquí */}
+      {/* Ruta libre de protección para que reciba el token de Supabase */}
+      <Route path="/actualizar-password" element={<ActualizarPassword />} />
+      
+      {/* El resto de la app SÍ está protegida */}
       <Route
         path="/*"
         element={

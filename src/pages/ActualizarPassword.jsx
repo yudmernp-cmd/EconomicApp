@@ -10,12 +10,12 @@ function ActualizarPassword() {
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
   const [cargando, setCargando] = useState(false);
-  const [sesionValida, setSesionValida] = useState(false); // Iniciamos en falso hasta comprobar
+  const [sesionValida, setSesionValida] = useState(false);
   const [verificando, setVerificando] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. Verificar si ya hay una sesión activa (por si recargan la página)
+    // 1. Verificar si ya hay una sesión activa
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setSesionValida(true);
@@ -23,16 +23,22 @@ function ActualizarPassword() {
       setVerificando(false);
     });
 
-    // 2. Escuchar el evento de autenticación (cuando Supabase lee el token del correo)
+    // 2. Escuchar el evento de recuperación de contraseña
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || session) {
         setSesionValida(true);
+        setVerificando(false);
       }
-      setVerificando(false);
     });
+
+    // 3. Temporizador de seguridad: Si en 2 segundos no hay sesión, muestra el error
+    const timer = setTimeout(() => {
+      setVerificando(false);
+    }, 2000);
 
     return () => {
       authListener.subscription.unsubscribe();
+      clearTimeout(timer);
     };
   }, []);
 
