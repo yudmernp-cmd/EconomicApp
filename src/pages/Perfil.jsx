@@ -16,6 +16,10 @@ function Perfil() {
   const [guardado, setGuardado] = useState(false);
   const { usuario, cerrarSesion } = useAuth();
   const [form, setForm] = useState(perfil);
+  
+  // --- NUEVOS ESTADOS PARA EXPORTAR ---
+  const [exportando, setExportando] = useState(false);
+  const [urlSheets, setUrlSheets] = useState(null);
 
   useEffect(() => { setForm(perfil); }, [perfil]);
 
@@ -31,6 +35,35 @@ function Perfil() {
       setMovimientos([]); setDeudas([]);
       localStorage.removeItem('finanzas_lecciones_vistas');
       alert('Datos borrados.');
+    }
+  };
+
+  // --- NUEVA FUNCIÓN PARA EXPORTAR ---
+  const exportarDatos = async () => {
+    setExportando(true);
+    setUrlSheets(null);
+    try {
+      // Traemos los datos guardados en el navegador
+      const movimientos = JSON.parse(localStorage.getItem('finanzas_movimientos') || '[]');
+      const deudas = JSON.parse(localStorage.getItem('finanzas_deudas') || '[]');
+
+      // Llamamos a nuestro backend en Vercel
+      const respuesta = await fetch('/api/exportar-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ movimientos, deudas }),
+      });
+
+      const data = await respuesta.json();
+
+      if (!respuesta.ok) throw new Error(data.error || 'Error al exportar');
+
+      setUrlSheets(data.url);
+      alert('¡Datos exportados con éxito!');
+    } catch (error) {
+      alert(error.message || 'Error al exportar a Google Sheets');
+    } finally {
+      setExportando(false);
     }
   };
 
@@ -80,6 +113,42 @@ function Perfil() {
         </form>
       </Card>
 
+      {/* --- NUEVA SECCIÓN DE EXPORTAR --- */}
+      <h2 className="perfil-seccion-titulo">Exportar Datos</h2>
+      <Card>
+        <p style={{ fontSize: '13px', color: 'var(--gris-600)', marginBottom: '16px', lineHeight: '1.4' }}>
+          Copia tus movimientos y deudas a una hoja de cálculo de Google para verlos como en Excel o compartirlos.
+        </p>
+        <button 
+          type="button" 
+          className="perfil-btn-guardar" 
+          style={{ background: '#0F9D58', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+          onClick={exportarDatos}
+          disabled={exportando}
+        >
+          {exportando ? 'Exportando...' : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="white" strokeWidth="2"/>
+                <path d="M7 8H17M7 12H17M7 16H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Exportar a Google Sheets
+            </>
+          )}
+        </button>
+        
+        {urlSheets && (
+          <a 
+            href={urlSheets} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ display: 'block', textAlign: 'center', marginTop: '12px', color: '#0F9D58', fontWeight: '700', fontSize: '13px', textDecoration: 'none' }}
+          >
+            Ver mi hoja de cálculo →
+          </a>
+        )}
+      </Card>
+
       <h2 className="perfil-seccion-titulo">Cuenta y Seguridad</h2>
       <Card>
         <button className="perfil-btn-logout" onClick={() => confirm('¿Cerrar sesión?') && cerrarSesion()}>
@@ -95,4 +164,4 @@ function Perfil() {
     </div>
   );
 }
-export default Perfil;  
+export default Perfil;
