@@ -11,7 +11,6 @@ export default async function handler(req, res) {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        // Limpiamos la llave por si Vercel le puso comillas de más
         private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, ''),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -20,19 +19,21 @@ export default async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // 1. Escribir Movimientos (Forzamos el nombre "movimientos")
+    // 1. Limpiamos la hoja de Movimientos (desde la fila 2 hacia abajo)
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: `Movimientos!A2:E1000`, 
+    });
+
+    // 2. Escribimos los datos
     const filasMovimientos = movimientos.map((m) => [
       m.fecha, m.tipo, m.categoria, m.descripcion || '', m.monto,
     ]);
 
-    await sheets.spreadsheets.values.clear({
-      spreadsheetId,
-      range: `movimientos!A2:E1000`, // Limpiamos datos viejos (dejando los encabezados)
-    });
-
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `movimientos!A1:E1`, 
+      // EL TRUCO ESTÁ AQUÍ: Usamos A:E (sin el 1) para que Google deje expandirse hacia abajo
+      range: `Movimientos!A:E`, 
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [
@@ -42,19 +43,20 @@ export default async function handler(req, res) {
       },
     });
 
-    // 2. Escribir Deudas (Forzamos el nombre "deudas")
+    // 3. Lo mismo para Deudas
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: `Deudas!A2:C1000`,
+    });
+
     const filasDeudas = deudas.map((d) => [
       d.nombre, d.montoTotal, d.cuotaMensual,
     ]);
 
-    await sheets.spreadsheets.values.clear({
-      spreadsheetId,
-      range: `deudas!A2:C1000`, // Limpiamos datos viejos
-    });
-
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `deudas!A1:C1`,
+      // Usamos A:C (sin el 1)
+      range: `Deudas!A:C`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [
