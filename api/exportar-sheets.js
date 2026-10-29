@@ -8,12 +8,11 @@ export default async function handler(req, res) {
   const { movimientos, deudas } = req.body;
 
   try {
-    // 1. Configurar la autenticación con las variables de entorno
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        // Reemplazamos los \n literales por saltos de línea reales
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        // Limpiamos la llave por si Vercel le puso comillas de más
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, ''),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
@@ -21,41 +20,41 @@ export default async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // 2. Preparar los datos de Movimientos
+    // 1. Escribir Movimientos (Forzamos el nombre "movimientos")
     const filasMovimientos = movimientos.map((m) => [
-      m.fecha,
-      m.tipo,
-      m.categoria,
-      m.descripcion || '',
-      m.monto,
+      m.fecha, m.tipo, m.categoria, m.descripcion || '', m.monto,
     ]);
 
-    // 3. Escribir en la hoja (Hoja 1: Movimientos)
-    // Limpiamos los datos viejos y ponemos los nuevos
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: `movimientos!A2:E1000`, // Limpiamos datos viejos (dejando los encabezados)
+    });
+
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: 'Hoja 1!A1:E1', // Asumiendo que la hoja se llama "Hoja 1"
+      range: `movimientos!A1:E1`, 
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [
-          ['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Monto'], // Encabezados
+          ['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Monto'],
           ...filasMovimientos,
         ],
       },
     });
 
-    // 4. Preparar los datos de Deudas
+    // 2. Escribir Deudas (Forzamos el nombre "deudas")
     const filasDeudas = deudas.map((d) => [
-      d.nombre,
-      d.montoTotal,
-      d.cuotaMensual,
+      d.nombre, d.montoTotal, d.cuotaMensual,
     ]);
 
-    // 5. Escribir Deudas en otra hoja (Si no existe, creará el rango, pero es mejor crearla a mano en Sheets)
-    // Para evitar errores, escribimos en la "Hoja 2". 
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: `deudas!A2:C1000`, // Limpiamos datos viejos
+    });
+
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: 'Hoja 2!A1:C1',
+      range: `deudas!A1:C1`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [
@@ -72,9 +71,9 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error exportando a Sheets:', error);
+    console.error('Error exportando a Sheets:', error.message);
     return res.status(500).json({ 
-      error: 'No se pudo exportar a Google Sheets. Verifica las credenciales y permisos.' 
+      error: `Error: ${error.message}` 
     });
   }
 }
