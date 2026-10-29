@@ -4,7 +4,9 @@ import { useLocalStorage } from '../hooks/useLocalStorage.js';
 import Card from '../components/Card.jsx';
 import './Aprende.css';
 
-// Íconos SVG para reemplazar los emojis de las lecciones
+// Función para mezclar arreglos (preguntas y opciones)
+const mezclarArreglo = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
 const ICONOS_LECCIONES = {
   1: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2V10M8 2V8M16 2V8M8 12H16M12 10V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 10C4 6.68629 6.68629 4 10 4H14C17.3137 4 20 6.68629 20 10V16C20 19.3137 17.3137 22 14 22H10C6.68629 22 4 19.3137 4 16V10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
   2: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 9V14M12 17H12.01M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
@@ -19,27 +21,107 @@ const ICONOS_LECCIONES = {
 function Aprende() {
   const [leccionesVistas, setLeccionesVistas] = useLocalStorage('finanzas_lecciones_vistas', []);
   const [leccionActiva, setLeccionActiva] = useState(null);
+  
+  // Estados del Quiz
+  const [preguntasQuiz, setPreguntasQuiz] = useState([]);
+  const [indicePregunta, setIndicePregunta] = useState(0);
   const [respuestaElegida, setRespuestaElegida] = useState(null);
-  const [mostrarResultado, setMostrarResultado] = useState(false);
+  const [mostrarFeedback, setMostrarFeedback] = useState(false);
+  const [aciertos, setAciertos] = useState(0);
+  const [quizTerminado, setQuizTerminado] = useState(false);
 
+  // Iniciar lección y preparar quiz aleatorio
+  const iniciarLeccion = (id) => {
+    const leccion = LECCIONES.find((l) => l.id === id);
+    
+    // Mezclar las preguntas y las opciones de cada pregunta
+    const preguntasMezcladas = mezclarArreglo(leccion.preguntas).map((p) => ({
+      ...p,
+      opciones: mezclarArreglo(p.opciones),
+      // Volvemos a buscar el índice de la respuesta correcta tras mezclar
+      indiceCorrecto: p.opciones.indexOf(p.opciones[p.correcta]) === -1 ? p.correcta : p.opciones.indexOf(p.opciones[p.correcta])
+    }));
+
+    // TRUCO: Al mezclar las opciones, el índice de la respuesta correcta cambia.
+    // Creamos un arreglo temporal para encontrar el nuevo índice.
+    const preguntasListas = mezclarArreglo(leccion.preguntas).map((p) => {
+      const opcionesMezcladas = mezclarArreglo(p.opciones);
+      const textoCorrecto = p.opciones[p.correcta];
+      return {
+        ...p,
+        opciones: opcionesMezcladas,
+        correcta: opcionesMezcladas.indexOf(textoCorrecto)
+      };
+    });
+
+    setLeccionActiva(id);
+    setPreguntasQuiz(preguntasListas);
+    setIndicePregunta(0);
+    setRespuestaElegida(null);
+    setMostrarFeedback(false);
+    setAciertos(0);
+    setQuizTerminado(false);
+  };
+
+  const responder = (index) => {
+    if (mostrarFeedback) return;
+    setRespuestaElegida(index);
+    setMostrarFeedback(true);
+    
+    if (index === preguntasQuiz[indicePregunta].correcta) {
+      setAciertos(aciertos + 1);
+    }
+  };
+
+  const siguientePregunta = () => {
+    if (indicePregunta < preguntasQuiz.length - 1) {
+      setIndicePregunta(indicePregunta + 1);
+      setRespuestaElegida(null);
+      setMostrarFeedback(false);
+    } else {
+      setQuizTerminado(true);
+      // Si acertó al menos 2, marcamos la lección como vista
+      if (aciertos >= 2 && !leccionesVistas.includes(leccionActiva)) {
+        setLeccionesVistas([...leccionesVistas, leccionActiva]);
+      }
+    }
+  };
+
+  const cerrar = () => {
+    setLeccionActiva(null);
+  };
+
+  // ================= VISTA DE LECCIÓN Y QUIZ =================
   if (leccionActiva) {
     const leccion = LECCIONES.find((l) => l.id === leccionActiva);
-    const esCorrecta = respuestaElegida === leccion.pregunta.correcta;
 
-    const responder = (index) => {
-      if (mostrarResultado) return;
-      setRespuestaElegida(index);
-      setMostrarResultado(true);
-      if (index === leccion.pregunta.correcta && !leccionesVistas.includes(leccion.id)) {
-        setLeccionesVistas([...leccionesVistas, leccion.id]);
-      }
-    };
+    if (quizTerminado) {
+      const aprobado = aciertos >= 2;
+      return (
+        <div className="aprende-contenedor">
+          <button className="aprende-btn-volver" onClick={cerrar}>← Volver</button>
+          <Card className="aprende-contenido-card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>
+              {aprobado ? '¡Felicidades! 🎉' : 'Sigue intentando 💪'}
+            </h2>
+            <p style={{ fontSize: '16px', color: 'var(--gris-600)', marginBottom: '20px' }}>
+              Has acertado <strong>{aciertos} de {preguntasQuiz.length}</strong> preguntas.
+            </p>
+            {aprobado ? (
+              <p style={{ color: 'var(--verde-700)', fontWeight: '600' }}>Has completado la lección.</p>
+            ) : (
+              <p style={{ color: '#DC2626', fontWeight: '600' }}>Necesitas acertar al menos 2 para completarla.</p>
+            )}
+            <button className="aprende-btn-terminar" onClick={cerrar} style={{ marginTop: '30px' }}>
+              Terminar
+            </button>
+          </Card>
+        </div>
+      );
+    }
 
-    const cerrar = () => {
-      setLeccionActiva(null);
-      setRespuestaElegida(null);
-      setMostrarResultado(false);
-    };
+    const preguntaActual = preguntasQuiz[indicePregunta];
+    const esCorrecta = respuestaElegida === preguntaActual.correcta;
 
     return (
       <div className="aprende-contenedor">
@@ -54,31 +136,41 @@ function Aprende() {
           {leccion.contenido.map((p, i) => <p key={i} className="aprende-parrafo">{p}</p>)}
         </Card>
 
-        <h2 className="aprende-pregunta-titulo">Pon a prueba lo aprendido</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <h2 className="aprende-pregunta-titulo">Pregunta {indicePregunta + 1} de {preguntasQuiz.length}</h2>
+          <span style={{ fontSize: '12px', color: 'var(--verde-700)', fontWeight: '700' }}>Aciertos: {aciertos}</span>
+        </div>
+
         <Card>
-          <p className="aprende-pregunta">{leccion.pregunta.texto}</p>
+          <p className="aprende-pregunta">{preguntaActual.texto}</p>
           <div className="aprende-opciones">
-            {leccion.pregunta.opciones.map((op, i) => {
+            {preguntaActual.opciones.map((op, i) => {
               let clase = 'aprende-btn-opcion';
-              if (mostrarResultado) {
-                if (i === leccion.pregunta.correcta) clase += ' opcion-correcta';
+              if (mostrarFeedback) {
+                if (i === preguntaActual.correcta) clase += ' opcion-correcta';
                 else if (i === respuestaElegida) clase += ' opcion-incorrecta';
               }
-              return <button key={i} className={clase} onClick={() => responder(i)} disabled={mostrarResultado}>{op}</button>;
+              return <button key={i} className={clase} onClick={() => responder(i)} disabled={mostrarFeedback}>{op}</button>;
             })}
           </div>
-          {mostrarResultado && (
+          
+          {mostrarFeedback && (
             <div className={esCorrecta ? 'aprende-respuesta correcto' : 'aprende-respuesta incorrecto'}>
               {esCorrecta ? '¡Muy bien! Has acertado.' : 'No es la respuesta correcta.'}
             </div>
           )}
         </Card>
 
-        {mostrarResultado && <button className="aprende-btn-terminar" onClick={cerrar}>Terminar lección</button>}
+        {mostrarFeedback && (
+          <button className="aprende-btn-terminar" onClick={siguientePregunta}>
+            {indicePregunta === preguntasQuiz.length - 1 ? 'Ver resultados' : 'Siguiente pregunta'}
+          </button>
+        )}
       </div>
     );
   }
 
+  // ================= VISTA DE LISTA DE LECCIONES =================
   return (
     <div className="aprende-contenedor">
       <h1>Aprende</h1>
@@ -98,7 +190,7 @@ function Aprende() {
         {LECCIONES.map((lec) => {
           const vista = leccionesVistas.includes(lec.id);
           return (
-            <button key={lec.id} className={`aprende-btn-leccion ${vista ? 'vista' : ''}`} onClick={() => setLeccionActiva(lec.id)}>
+            <button key={lec.id} className={`aprende-btn-leccion ${vista ? 'vista' : ''}`} onClick={() => iniciarLeccion(lec.id)}>
               <span className={`aprende-btn-icono ${vista ? 'completada' : ''}`}>{ICONOS_LECCIONES[lec.id]}</span>
               <span className="aprende-btn-titulo">{lec.titulo}</span>
               {vista && (
@@ -113,4 +205,5 @@ function Aprende() {
     </div>
   );
 }
+
 export default Aprende;
