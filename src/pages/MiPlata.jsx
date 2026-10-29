@@ -7,6 +7,7 @@ import {
 import { formatearSoles, formatearFecha, hoyISO } from '../utils/formatos.js';
 import Card from '../components/Card.jsx';
 import './MiPlata.css';
+import GraficoDona from '../components/GraficoDona.jsx';
 
 // Diccionario de íconos SVG
 const ICONOS = {
@@ -200,6 +201,8 @@ function MiPlata() {
           </button>
         ))}
       </div>
+
+      <GraficoDona movimientos={listaFiltrada} categorias={CATEGORIAS_GASTO} />
 
       {listaFiltrada.length === 0 ? (
         <p className="miplata-vacio">No hay movimientos todavía.</p>
