@@ -58,3 +58,100 @@
 .miplata-item-monto.rojo { color: #DC2626; }
 .miplata-item-eliminar { background: none; border: none; color: var(--gris-300); font-size: 20px; cursor: pointer; padding: 0 4px; transition: color 0.2s; }
 .miplata-item-eliminar:hover { color: #DC2626; }
+/* Formulario y controles */
+.miplata-input {
+  box-sizing: border-box;
+  min-width: 0;
+  font-size: 16px;
+  transition: border-color 180ms ease, box-shadow 180ms ease,
+              background-color 180ms ease;
+}
+
+.miplata-btn-tipo,
+.miplata-btn-cat,
+.miplata-btn-filtro,
+.miplata-btn-guardar {
+  font-family: inherit;
+  min-height: 44px;
+  transition: background-color 180ms ease, border-color 180ms ease,
+              box-shadow 180ms ease, transform 180ms ease;
+}
+
+.miplata-contenedor button:focus-visible {
+  outline: 3px solid var(--verde-700, #166534);
+  outline-offset: 3px;
+}
+
+/* Categorías: cuatro columnas cuando hay espacio */
+.miplata-categorias {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.miplata-btn-cat {
+  min-width: 0;
+  justify-content: center;
+}
+
+.miplata-btn-cat-label {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Historial: cifras alineadas y botón de eliminar más fácil de pulsar */
+.miplata-item-monto {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.miplata-item-eliminar {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--gris-500, #667085);
+}
+
+@media (hover: hover) {
+  .miplata-btn-cat:hover,
+  .miplata-btn-tipo:hover {
+    border-color: currentColor;
+    transform: translateY(-1px);
+  }
+
+  .miplata-item-eliminar:hover {
+    background-color: #fef2f2;
+    color: #b91c1c;
+  }
+}
+
+@media (max-width: 480px) {
+  .miplata-form-card {
+    padding: 16px;
+  }
+
+  .miplata-categorias {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .miplata-filtros {
+    flex-wrap: wrap;
+  }
+
+  .miplata-item {
+    gap: 8px;
+    padding: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .miplata-contenedor,
+  .miplata-item,
+  .miplata-contenedor button,
+  .miplata-input {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}

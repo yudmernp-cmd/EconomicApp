@@ -1,64 +1,505 @@
-.prestamos-contenedor { animation: fadeInUp 400ms ease; }
-.prestamos-subtitulo { color: var(--gris-500); font-size: 13px; margin-bottom: 20px; }
-.prestamos-seccion-titulo { font-size: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+/* ── Contenedor y títulos ─────────────────────────────────── */
 
-.prestamos-form { display: flex; flex-direction: column; gap: 12px; }
-.prestamos-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.prestamos-campo { display: flex; flex-direction: column; gap: 6px; }
-.prestamos-label { font-size: 12px; font-weight: 600; color: var(--gris-700); }
-.prestamos-input { padding: 12px 14px; border: 1.5px solid var(--gris-200); border-radius: var(--radio-md); font-family: inherit; font-size: 14px; background: var(--gris-50); }
-.prestamos-input:focus { outline: none; border-color: var(--verde-700); background: #fff; box-shadow: 0 0 0 4px rgba(15,81,50,0.08); }
+.prestamos-contenedor {
+  min-width: 0;
+  animation: fadeInUp 350ms ease-out;
+}
 
-.prestamos-frecuencias { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
-.prestamos-btn-frec { padding: 8px; border: 1px solid var(--gris-200); background: #fff; border-radius: var(--radio-sm); font-size: 11px; font-weight: 600; color: var(--gris-500); }
-.prestamos-btn-frec.activo { background: var(--verde-50); border-color: var(--verde-700); color: var(--verde-800); }
+.prestamos-subtitulo {
+  margin: 0 0 20px;
+  color: var(--gris-500);
+  font-size: 14px;
+  line-height: 1.55;
+}
 
-.prestamos-btn-calcular { width: 100%; padding: 14px; background: var(--verde-800); color: #fff; border-radius: var(--radio-md); font-weight: 700; font-size: 14px; margin-top: 8px; border: none; }
-.prestamos-btn-calcular:hover { background: var(--verde-900); transform: translateY(-1px); }
-.prestamos-btn-mini { font-size: 12px; padding: 6px 12px; background: var(--verde-50); color: var(--verde-800); border: 1px solid var(--verde-100); border-radius: var(--radio-full); font-weight: 700; }
+.prestamos-seccion-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin: 0 0 16px;
+  color: var(--gris-900);
+  font-size: 17px;
+  line-height: 1.35;
+}
 
-.prestamos-resultado { border-radius: var(--radio-lg); padding: 20px; margin-top: 16px; animation: fadeIn 300ms ease; }
-.result-verde { background: var(--verde-50); border: 1px solid var(--verde-200); }
-.result-amarillo { background: #FFFBEB; border: 1px solid #FDE68A; }
-.result-rojo { background: #FEF2F2; border: 1px solid #FECACA; box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15); }
+/* ── Formulario y frecuencia de pago ───────────────────────── */
 
-.resultado-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; font-weight: 700; font-size: 14px; }
-.resultado-monto-total { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(0,0,0,0.06); }
-.resultado-label { font-size: 12px; color: var(--gris-500); font-weight: 600; }
-.resultado-valor { font-size: 32px; font-weight: 800; color: var(--gris-900); letter-spacing: -1px; }
+.prestamos-form {
+  display: grid;
+  gap: 16px;
+}
 
-.resultado-detalles { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-.resultado-detalle-item { display: flex; justify-content: space-between; font-size: 13px; color: var(--gris-700); }
-.resultado-detalle-item .rojo { color: #DC2626; }
-.resultado-resumen { font-size: 12.5px; color: var(--gris-600); line-height: 1.5; background: #fff; padding: 12px; border-radius: var(--radio-sm); }
+.prestamos-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
 
-.prestamos-deudas-lista { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-.prestamos-deuda-resumen { padding: 16px; border-radius: var(--radio-md); border-left: 4px solid; background: #fff; }
-.deuda-resumen-header { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 13px; margin-bottom: 12px; }
-.deuda-resumen-totales { display: flex; justify-content: space-between; font-size: 12px; color: var(--gris-600); }
-.deuda-resumen-totales strong { color: var(--gris-900); }
+.prestamos-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
 
-.prestamos-deuda-item { display: flex; align-items: center; background: #fff; padding: 12px 16px; border-radius: var(--radio-md); gap: 12px; box-shadow: var(--sombra-xs); }
-.deuda-item-info { flex: 1; display: flex; flex-direction: column; }
-.deuda-item-nombre { font-size: 14px; font-weight: 700; color: var(--gris-900); }
-.deuda-item-cuota { font-size: 11px; color: var(--gris-500); }
-.deuda-item-monto { font-size: 14px; font-weight: 800; color: #DC2626; }
-.deuda-item-eliminar { background: none; border: none; font-size: 20px; color: var(--gris-300); cursor: pointer; padding: 0; }
-.deuda-item-eliminar:hover { color: #DC2626; }
+.prestamos-label {
+  color: var(--gris-700);
+  font-size: 13px;
+  font-weight: 600;
+}
 
-.prestamos-buscador { display: flex; align-items: center; gap: 10px; background: var(--gris-50); padding: 12px 16px; border-radius: var(--radio-md); border: 1.5px solid var(--gris-200); }
-.prestamos-buscador svg { color: var(--gris-400); }
-.prestamos-input-buscador { border: none; background: transparent; flex: 1; font-size: 14px; outline: none; font-family: inherit; }
-.prestamos-alerta-texto { font-size: 13px; color: var(--rojo-700); font-weight: 500; line-height: 1.4; margin: 0; }
+.prestamos-input,
+.prestamos-buscador {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  background: var(--gris-50);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
 
-.prestamos-resultados-busqueda { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-.prestamos-prestamista-card { padding: 16px; border-radius: var(--radio-md); border-left: 4px solid; background: #fff; margin: 0; }
-.border-verde { border-left-color: var(--verde-700); }
-.border-amarillo { border-left-color: var(--amarillo-700); }
-.border-rojo { border-left-color: var(--rojo-700); }
-.prestamista-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.prestamista-titulo { display: flex; gap: 10px; }
-.prestamista-icono { font-size: 20px; }
-.prestamista-nombre { font-size: 14px; font-weight: 700; color: var(--gris-900); display: block; }
-.prestamista-tipo { font-size: 11px; color: var(--gris-400); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-.prestamista-nota { font-size: 12.5px; color: var(--gris-600); line-height: 1.4; margin: 0; }
+.prestamos-input {
+  padding: 11px 14px;
+  color: var(--gris-900);
+  font: inherit;
+  font-size: 16px;
+}
+
+.prestamos-input:focus,
+.prestamos-buscador:focus-within {
+  border-color: var(--verde-700);
+  outline: 2px solid var(--verde-700);
+  outline-offset: 2px;
+  background: #fff;
+}
+
+.prestamos-frecuencias {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.prestamos-btn-frec,
+.prestamos-btn-calcular,
+.prestamos-btn-mini,
+.deuda-item-eliminar {
+  box-sizing: border-box;
+  min-height: 44px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease,
+              color 160ms ease, box-shadow 160ms ease;
+}
+
+.prestamos-btn-frec {
+  min-width: 0;
+  padding: 9px 6px;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  background: #fff;
+  color: var(--gris-700);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.prestamos-btn-frec.activo {
+  border-color: var(--verde-700);
+  background: var(--verde-50);
+  color: var(--verde-800);
+  box-shadow: inset 0 0 0 1px var(--verde-700);
+  font-weight: 700;
+}
+
+.prestamos-btn-calcular {
+  width: 100%;
+  margin-top: 4px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: var(--radio-md);
+  background: var(--verde-800);
+  color: #fff;
+  box-shadow: var(--sombra-xs);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.prestamos-btn-mini {
+  padding: 8px 14px;
+  border: 1px solid var(--verde-200);
+  border-radius: var(--radio-full);
+  background: var(--verde-50);
+  color: var(--verde-800);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Resultado de la simulación ────────────────────────────── */
+
+.prestamos-resultado {
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  background: #fff;
+  animation: fadeIn 250ms ease-out;
+}
+
+.prestamos-resultado.result-verde {
+  border-color: var(--verde-200);
+  background: var(--verde-50);
+  color: var(--verde-800);
+}
+
+.prestamos-resultado.result-amarillo {
+  border-color: #f5d77b;
+  background: #fffbeb;
+  color: #854d0e;
+}
+
+.prestamos-resultado.result-rojo {
+  border-color: #f5b8b8;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.resultado-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.resultado-monto-total {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgb(0 0 0 / 10%);
+}
+
+.resultado-label {
+  color: var(--gris-600);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.resultado-valor {
+  color: var(--gris-900);
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+
+.resultado-detalles {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.resultado-detalle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--gris-700);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.resultado-detalle-item > :last-child {
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.resultado-detalle-item .rojo {
+  color: #b91c1c;
+}
+
+.resultado-valor,
+.resultado-detalle-item,
+.deuda-resumen-totales,
+.deuda-item-monto {
+  font-variant-numeric: tabular-nums;
+}
+
+.resultado-resumen {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radio-sm);
+  background: #fff;
+  color: var(--gris-700);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── Deudas registradas ────────────────────────────────────── */
+
+.prestamos-deudas-lista,
+.prestamos-resultados-busqueda {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.prestamos-deuda-resumen,
+.prestamos-prestamista-card {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--gris-200);
+  border-left: 4px solid var(--gris-400);
+  border-radius: var(--radio-md);
+  background: #fff;
+  box-shadow: var(--sombra-xs);
+}
+
+.prestamos-contenedor .border-verde {
+  border-left-color: var(--verde-700);
+}
+
+.prestamos-contenedor .border-amarillo {
+  border-left-color: var(--amarillo-700, #a16207);
+}
+
+.prestamos-contenedor .border-rojo {
+  border-left-color: var(--rojo-700, #b91c1c);
+}
+
+.deuda-resumen-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: var(--gris-900);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.deuda-resumen-totales {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  color: var(--gris-600);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.deuda-resumen-totales strong {
+  color: var(--gris-900);
+}
+
+.prestamos-deuda-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  background: #fff;
+  box-shadow: var(--sombra-xs);
+}
+
+.deuda-item-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.deuda-item-nombre {
+  color: var(--gris-900);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.deuda-item-cuota {
+  color: var(--gris-500);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.deuda-item-monto {
+  color: #b91c1c;
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.deuda-item-eliminar {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gris-500);
+  font-size: 20px;
+}
+
+/* ── Búsqueda de prestamistas ──────────────────────────────── */
+
+.prestamos-buscador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+.prestamos-buscador svg {
+  flex-shrink: 0;
+  color: var(--gris-500);
+}
+
+.prestamos-input-buscador {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  outline: none; /* El contenedor muestra el foco con :focus-within. */
+  background: transparent;
+  color: var(--gris-900);
+  font: inherit;
+  font-size: 16px;
+}
+
+.prestamos-alerta-texto {
+  margin: 0;
+  color: var(--rojo-700, #b91c1c);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.prestamista-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.prestamista-titulo {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.prestamista-icono {
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.prestamista-nombre {
+  display: block;
+  color: var(--gris-900);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.prestamista-tipo {
+  color: var(--gris-600);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.prestamista-nota {
+  margin: 0;
+  color: var(--gris-600);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ── Interacción y pantallas pequeñas ──────────────────────── */
+
+.prestamos-contenedor button:focus-visible {
+  outline: 3px solid var(--verde-700);
+  outline-offset: 3px;
+}
+
+.prestamos-contenedor button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .prestamos-btn-frec:enabled:not(.activo):hover,
+  .prestamos-btn-mini:enabled:hover {
+    border-color: var(--verde-500);
+    background: var(--verde-50);
+  }
+
+  .prestamos-btn-calcular:enabled:hover {
+    background: var(--verde-900);
+    box-shadow: var(--sombra-sm);
+  }
+
+  .deuda-item-eliminar:enabled:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+}
+
+@media (max-width: 480px) {
+  .prestamos-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prestamos-frecuencias {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .prestamos-deuda-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 8px;
+  }
+
+  .deuda-item-info,
+  .deuda-item-monto {
+    grid-column: 1;
+  }
+
+  .deuda-item-eliminar {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prestamos-contenedor,
+  .prestamos-resultado {
+    animation: none;
+  }
+
+  .prestamos-contenedor button,
+  .prestamos-input,
+  .prestamos-buscador {
+    transition: none;
+  }
+}
