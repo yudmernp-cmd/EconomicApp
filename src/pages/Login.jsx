@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth.js';
 import { supabase } from '../lib/supabase.js';
 import { Link } from 'react-router-dom'; // IMPORTANTE: Agregado para el botón de olvidé contraseña
 import './Login.css';
@@ -82,7 +82,7 @@ function Login() {
         },
       });
       if (error) throw error;
-    } catch (err) {
+    } catch {
       setError('Error al conectar con Google. Intenta más tarde.');
       setCargando(false);
     }

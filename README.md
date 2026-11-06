@@ -1,16 +1,43 @@
-# React + Vite
+# Cuadra tus Lucas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación de finanzas familiares en soles, construida con React y Vite.
 
-Currently, two official plugins are available:
+## Funciones
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Panel con balance, ingresos, gastos por categoría y movimientos recientes.
+- Presupuesto mensual editable con seguimiento y aviso al superar el límite.
+- Registro y edición de ingresos/gastos, búsqueda sin tildes y filtros por tipo y período.
+- Descarga CSV de los movimientos filtrados, compatible con importes en centavos.
+- Simulador de préstamos, lecciones y perfil familiar.
+- Navegación inferior en móvil y barra lateral en escritorio.
 
-## React Compiler
+Los movimientos, el perfil, las deudas y el presupuesto se conservan en este navegador mediante localStorage. Los cambios se sincronizan entre componentes y pestañas del mismo origen. La descarga CSV permite conservar una copia del historial; no hay sincronización de estos datos con Supabase.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Desarrollo
 
-## Expanding the ESLint configuration
+Se validó con Node.js 24 y npm 11.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```sh
+npm ci
+npm run dev
+```
+
+Las variables de Supabase y las credenciales de las integraciones se gestionan en Vercel. No se incluyen valores en el repositorio. Vite por sí solo no ejecuta las funciones serverless de `api/` ni hereda las variables de Vercel. La compilación y las pruebas de lógica funcionan sin esas variables; la autenticación real necesita la configuración del despliegue.
+
+## Comprobaciones
+
+```sh
+npm run lint
+npm test
+npm run build
+```
+
+Las pruebas cubren límites de semanas/quincenas/meses, fechas locales, sumas en centavos, filtros combinados, validación de movimientos y escape de CSV. El comando de pruebas usa Node.js 24 y no añade dependencias.
+
+## Períodos y presupuesto
+
+- Semanal: lunes a domingo.
+- Quincenal: días 1 a 15 y 16 al último día del mes.
+- Mensual e irregular: mes calendario.
+
+El resumen incluye movimientos desde el inicio del período hasta hoy. Los días restantes incluyen el día actual. El presupuesto siempre usa los gastos del mes calendario, independientemente del ciclo elegido en Perfil; su límite se mantiene para cada mes hasta editarlo o quitarlo. Quitar el límite conserva los movimientos.

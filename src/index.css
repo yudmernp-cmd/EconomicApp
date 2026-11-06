@@ -115,7 +115,8 @@ body {
 
 /* ===== LAYOUT ===== */
 .app {
-  max-width: 480px;
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
@@ -125,18 +126,13 @@ body {
   position: relative;
 }
 
-/* En escritorio, la app se ve como un "teléfono" centrado y elegante */
-@media (min-width: 520px) {
-  body {
-    background-color: var(--crema-oscuro);
-  }
-  .app {
-    box-shadow: var(--sombra-lg);
-  }
-}
 
 .contenido {
   flex: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: 1100px;
+  margin: 0 auto;
   padding: 24px 18px;
   padding-top: max(24px, env(safe-area-inset-top));
   padding-bottom: calc(104px + env(safe-area-inset-bottom));

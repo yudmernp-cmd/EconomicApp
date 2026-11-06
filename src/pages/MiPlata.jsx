@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import {
-  useMovimientos,
-  agregarMovimiento,
-  eliminarMovimiento,
-} from '../storage.js';
+import { useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useMovimientos, usePerfil, agregarMovimiento, eliminarMovimiento } from '../storage.js';
 import { formatearSoles, formatearFecha, hoyISO } from '../utils/formatos.js';
+import { obtenerPeriodo } from '../utils/finanzas.js';
+import { filtrarHistorial, movimientosCSV, validarMovimiento } from '../utils/movimientos.js';
 import Card from '../components/Card.jsx';
-import './MiPlata.css';
 import GraficoDona from '../components/GraficoDona.jsx';
+import './MiPlata.css';
 
 // Diccionario de íconos SVG
 const ICONOS = {
@@ -47,199 +46,237 @@ const FILTROS = [
   { id: 'todo', label: 'Todo' },
 ];
 
+function FlechaMovimiento({ entrada = false, size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false" style={{ verticalAlign: 'middle' }}>
+      <path d={entrada ? 'M18 6 6 18M6 7v11h11' : 'M6 18 18 6M7 6h11v11'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function MiPlata() {
+  const [params] = useSearchParams();
+  const tipoInicial = params.get('tipo') === 'ingreso' ? 'ingreso' : 'gasto';
   const [movimientos, setMovimientos] = useMovimientos();
-  const [tipo, setTipo] = useState('gasto');
+  const [perfil] = usePerfil();
+  const [tipo, setTipo] = useState(tipoInicial);
   const [monto, setMonto] = useState('');
-  
-  // Por defecto iniciamos con la primera categoría de gasto
-  const [categoria, setCategoria] = useState('comida');
-  
+  const [categoria, setCategoria] = useState(tipoInicial === 'gasto' ? 'comida' : 'sueldo');
   const [descripcion, setDescripcion] = useState('');
   const [fecha, setFecha] = useState(hoyISO());
-  const [filtro, setFiltro] = useState('todo');
-
-  // TRUCO: Si cambias entre Gasto e Ingreso, reseteamos la categoría seleccionada
-  // para que no intentes guardar un "Sueldo" como "Comida"
-  useEffect(() => {
-    setCategoria(tipo === 'gasto' ? 'comida' : 'sueldo');
-  }, [tipo]);
-
-  // Determinamos qué categorías mostrar
+  const [filtro, setFiltro] = useState('mes');
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [editando, setEditando] = useState(null);
+  const [mensaje, setMensaje] = useState('');
+  const [error, setError] = useState('');
+  const montoRef = useRef(null);
+  const formRef = useRef(null);
   const categoriasActuales = tipo === 'gasto' ? CATEGORIAS_GASTO : CATEGORIAS_INGRESO;
+  const todasCategorias = [...CATEGORIAS_GASTO, ...CATEGORIAS_INGRESO];
+  const periodo = obtenerPeriodo(filtro === 'mes' ? 'mensual' : perfil.cicloIngreso);
+  const listaFiltrada = filtrarHistorial(movimientos, {
+    busqueda, tipo: filtroTipo,
+    inicio: filtro === 'todo' ? null : periodo.inicio,
+    fin: filtro === 'todo' ? null : periodo.fin,
+    categorias: todasCategorias,
+  });
+  const total = (tipoMovimiento) => listaFiltrada
+    .filter((m) => m.tipo === tipoMovimiento)
+    .reduce((sum, m) => sum + Math.round(Number(m.monto) * 100), 0) / 100;
 
-  const guardar = (e) => {
-    e.preventDefault();
-    const montoNum = parseFloat(monto);
-    if (!montoNum || montoNum <= 0) {
-      alert('Ingresa un monto válido');
-      return;
-    }
-    agregarMovimiento(setMovimientos, {
-      tipo,
-      monto: montoNum,
-      categoria,
-      descripcion: descripcion.trim(),
-      fecha,
-    });
+  const cambiarTipo = (nuevoTipo) => {
+    setTipo(nuevoTipo);
+    setCategoria(nuevoTipo === 'gasto' ? 'comida' : 'sueldo');
+  };
+
+  const limpiarFormulario = () => {
+    setEditando(null);
     setMonto('');
     setDescripcion('');
     setFecha(hoyISO());
+    setError('');
   };
 
-  const filtrarMovimientos = () => {
-    const hoy = new Date();
-    let desde = null;
-
-    if (filtro === 'mes') {
-      desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    } else if (filtro === 'ciclo') {
-      desde = new Date();
-      desde.setDate(hoy.getDate() - 7);
+  const guardar = (e) => {
+    e.preventDefault();
+    setMensaje('');
+    setError('');
+    const movimiento = { tipo, monto: Number(monto), categoria, descripcion: descripcion.trim(), fecha };
+    const problema = validarMovimiento(movimiento, hoyISO());
+    if (problema) { setError(problema); return; }
+    movimiento.monto = Math.round(movimiento.monto * 100) / 100;
+    try {
+      if (editando !== null) {
+        setMovimientos((prev) => prev.map((m) => m.id === editando ? { ...m, ...movimiento } : m));
+      } else {
+        agregarMovimiento(setMovimientos, movimiento);
+      }
+      setMensaje(editando !== null ? 'Movimiento actualizado.' : 'Movimiento guardado.');
+      limpiarFormulario();
+    } catch (problemaGuardado) {
+      setError(problemaGuardado.message);
     }
-
-    const lista = desde
-      ? movimientos.filter((m) => new Date(m.fecha) >= desde)
-      : movimientos;
-
-    return [...lista].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
   };
 
-  const listaFiltrada = filtrarMovimientos();
+  const editar = (movimiento) => {
+    setEditando(movimiento.id);
+    setTipo(movimiento.tipo);
+    setMonto(String(movimiento.monto));
+    setCategoria(movimiento.categoria);
+    setDescripcion(movimiento.descripcion || '');
+    setFecha(movimiento.fecha);
+    setError('');
+    setMensaje('');
+    formRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
+    montoRef.current?.focus({ preventScroll: true });
+  };
+
+  const exportar = () => {
+    const blob = new Blob([movimientosCSV(listaFiltrada, todasCategorias)], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = `mis-movimientos-${hoyISO()}.csv`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setMensaje(`Archivo preparado con ${listaFiltrada.length} movimientos.`);
+  };
 
   return (
     <div className="miplata-contenedor">
-      <h1>Mi Plata</h1>
-      <p className="miplata-subtitulo">Registra tus ingresos y gastos de forma rápida.</p>
-
-      <Card className="miplata-form-card">
-        <form onSubmit={guardar}>
-          <div className="miplata-tipo-selector">
-            <button
-              type="button"
-              className={tipo === 'gasto' ? 'miplata-btn-tipo activo-gasto' : 'miplata-btn-tipo'}
-              onClick={() => setTipo('gasto')}
-            >
-              Gasto
-            </button>
-            <button
-              type="button"
-              className={tipo === 'ingreso' ? 'miplata-btn-tipo activo-ingreso' : 'miplata-btn-tipo'}
-              onClick={() => setTipo('ingreso')}
-            >
-              Ingreso
-            </button>
-          </div>
-
-          <label className="miplata-campo">
-            <span className="miplata-label">Monto (S/)</span>
-            <input
-              type="number"
-              step="0.10"
-              min="0"
-              value={monto}
-              onChange={(e) => setMonto(e.target.value)}
-              placeholder="0.00"
-              className="miplata-input"
-            />
-          </label>
-
-          <span className="miplata-label">Categoría</span>
-          <div className="miplata-categorias">
-            {/* AQUÍ RENDERIZAMOS DINÁMICAMENTE SEGÚN EL TIPO */}
-            {categoriasActuales.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={categoria === cat.id ? 'miplata-btn-cat activo' : 'miplata-btn-cat'}
-                onClick={() => setCategoria(cat.id)}
-              >
-                <span className="miplata-btn-cat-icono">{ICONOS[cat.id]}</span>
-                <span className="miplata-btn-cat-label">{cat.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <label className="miplata-campo">
-            <span className="miplata-label">Descripción (opcional)</span>
-            <input
-              type="text"
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              placeholder={tipo === 'gasto' ? "Ej: almuerzo, pasaje al mercado" : "Ej: pago de quincena, venta de fruta"}
-              className="miplata-input"
-              maxLength={50}
-            />
-          </label>
-
-          <label className="miplata-campo">
-            <span className="miplata-label">Fecha</span>
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="miplata-input"
-            />
-          </label>
-
-          <button type="submit" className="miplata-btn-guardar">
-            Guardar Movimiento
-          </button>
-        </form>
-      </Card>
-
-      <h2 className="miplata-historial-titulo">Historial</h2>
-
-      <div className="miplata-filtros">
-        {FILTROS.map((f) => (
-          <button
-            key={f.id}
-            className={filtro === f.id ? 'miplata-btn-filtro activo' : 'miplata-btn-filtro'}
-            onClick={() => setFiltro(f.id)}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      <GraficoDona movimientos={listaFiltrada} categorias={CATEGORIAS_GASTO} />
-
-      {listaFiltrada.length === 0 ? (
-        <p className="miplata-vacio">No hay movimientos todavía.</p>
-      ) : (
-        <div className="miplata-lista">
-          {listaFiltrada.map((m) => {
-            // Buscamos el nombre de la categoría tanto en gastos como en ingresos
-            const catObj = [...CATEGORIAS_GASTO, ...CATEGORIAS_INGRESO].find(c => c.id === m.categoria);
-            return (
-              <div key={m.id} className="miplata-item">
-                <span className={`miplata-item-icono ${m.tipo}`}>
-                  {ICONOS[m.categoria] || ICONOS.otro}
-                </span>
-                <div className="miplata-item-info">
-                  <span className="miplata-item-desc">
-                    {m.descripcion || catObj?.label || 'Movimiento'}
-                  </span>
-                  <span className="miplata-item-fecha">{formatearFecha(m.fecha)}</span>
-                </div>
-                <span className={m.tipo === 'ingreso' ? 'miplata-item-monto verde' : 'miplata-item-monto rojo'}>
-                  {m.tipo === 'ingreso' ? '+' : '−'} {formatearSoles(m.monto)}
-                </span>
-                <button
-                  className="miplata-item-eliminar"
-                  onClick={() => {
-                    if (confirm('¿Eliminar este movimiento?')) {
-                      eliminarMovimiento(setMovimientos, m.id);
-                    }
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            );
-          })}
+      <header className="miplata-cabecera">
+        <div>
+          <span className="miplata-eyebrow">CADA SOL CUENTA</span>
+          <h1>Mi plata</h1>
+          <p className="miplata-subtitulo">Un lugar para entender lo que entra y lo que sale.</p>
         </div>
-      )}
+        <span className="miplata-insignia">Tus finanzas, a tu ritmo</span>
+      </header>
+      <p className="miplata-feedback" role="status">{mensaje}</p>
+      {error && <p role="alert" className="miplata-error">{error}</p>}
+      <div className="miplata-layout">
+        <aside className="miplata-registro">
+          <Card className="miplata-form-card">
+            <form onSubmit={guardar} ref={formRef}>
+              <div className="miplata-form-titulo">
+                <span className="miplata-form-signo" aria-hidden="true">{editando !== null ? <FlechaMovimiento size={19} /> : '+'}</span>
+                <h2>{editando !== null ? 'Editar movimiento' : 'Nuevo movimiento'}</h2>
+              </div>
+              <div className="miplata-tipo-selector" role="group" aria-label="Tipo de movimiento">
+                {['gasto', 'ingreso'].map((opcion) => (
+                  <button key={opcion} type="button" aria-pressed={tipo === opcion}
+                    className={`miplata-btn-tipo ${tipo === opcion ? `activo-${opcion}` : ''}`}
+                    onClick={() => cambiarTipo(opcion)}>
+                    <span aria-hidden="true"><FlechaMovimiento entrada={opcion === 'ingreso'} /></span> {opcion === 'gasto' ? 'Gasto' : 'Ingreso'}
+                  </button>
+                ))}
+              </div>
+              <label className="miplata-campo">
+                <span className="miplata-label">Monto (S/)</span>
+                <input ref={montoRef} type="number" inputMode="decimal" step="0.01" min="0.01" max="999999999.99" required
+                  value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0.00" className="miplata-input miplata-input-monto" />
+              </label>
+              <fieldset className="miplata-categorias-grupo">
+                <legend className="miplata-label">Categoría</legend>
+                <div className="miplata-categorias">
+                  {categoriasActuales.map((cat) => (
+                    <button key={cat.id} type="button" aria-pressed={categoria === cat.id}
+                      className={`miplata-btn-cat ${categoria === cat.id ? 'activo' : ''}`} onClick={() => setCategoria(cat.id)}>
+                      <span className="miplata-btn-cat-icono" aria-hidden="true">{ICONOS[cat.id]}</span>
+                      <span className="miplata-btn-cat-label">{cat.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              <label className="miplata-campo">
+                <span className="miplata-label">Descripción <span className="miplata-opcional">(opcional)</span></span>
+                <input type="text" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder={tipo === 'gasto' ? 'Ej. compras para la semana' : 'Ej. pago de quincena'} className="miplata-input" maxLength={100} />
+              </label>
+              <label className="miplata-campo">
+                <span className="miplata-label">Fecha</span>
+                <input type="date" required min="1900-01-01" max={hoyISO()} value={fecha} onChange={(e) => setFecha(e.target.value)} className="miplata-input" />
+              </label>
+              <button type="submit" className="miplata-btn-guardar">{editando !== null ? 'Guardar cambios' : 'Guardar movimiento'} <span aria-hidden="true">→</span></button>
+              {editando !== null && <button type="button" className="miplata-btn-cancelar" onClick={limpiarFormulario}>Cancelar edición</button>}
+            </form>
+          </Card>
+          <p className="miplata-nota">Tus registros se guardan en este navegador. Descarga una copia para conservarlos.</p>
+        </aside>
+        <section className="miplata-historial" aria-labelledby="historial-titulo">
+          <div className="miplata-historial-header">
+            <div><h2 id="historial-titulo">Tus movimientos</h2><p>Revisa, encuentra y organiza tus cuentas.</p></div>
+            <button type="button" className="miplata-exportar" onClick={exportar} disabled={!listaFiltrada.length}>
+              <span aria-hidden="true">↓</span> Descargar CSV
+            </button>
+          </div>
+          <div className="miplata-filtros" role="group" aria-label="Período del historial">
+            {FILTROS.map((f) => <button type="button" key={f.id} aria-pressed={filtro === f.id}
+              className={`miplata-btn-filtro ${filtro === f.id ? 'activo' : ''}`} onClick={() => setFiltro(f.id)}>{f.label}</button>)}
+          </div>
+          <div className="miplata-buscador">
+            <label className="miplata-busqueda"><span className="miplata-label">Buscar movimiento</span>
+              <input type="search" placeholder="Descripción o categoría…" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+            </label>
+            <div><label className="miplata-label" htmlFor="miplata-filtro-tipo">Tipo</label>
+              <select id="miplata-filtro-tipo" value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
+                <option value="todos">Todos</option><option value="ingreso">Ingresos</option><option value="gasto">Gastos</option>
+              </select>
+            </div>
+          </div>
+          <div className="miplata-totales" aria-label="Totales de los resultados">
+            <div><span>Ingresos</span><strong className="miplata-positivo">{formatearSoles(total('ingreso'))}</strong></div>
+            <div><span>Gastos</span><strong>{formatearSoles(total('gasto'))}</strong></div>
+            <div><span>Balance</span><strong className={total('ingreso') - total('gasto') < 0 ? 'miplata-negativo' : 'miplata-positivo'}>{formatearSoles(total('ingreso') - total('gasto'))}</strong></div>
+          </div>
+          <p className="miplata-conteo" aria-live="polite">{listaFiltrada.length} {listaFiltrada.length === 1 ? 'movimiento encontrado' : 'movimientos encontrados'}</p>
+          {listaFiltrada.length === 0 ? (
+            <div className="miplata-vacio">
+              <span className="miplata-vacio-icono" aria-hidden="true"><FlechaMovimiento entrada size={28} /><FlechaMovimiento size={28} /></span>
+              <h3>{movimientos.length ? 'No encontramos coincidencias' : 'Tu historia empieza con un movimiento'}</h3>
+              <p>{movimientos.length ? 'Prueba otro período, tipo o término de búsqueda.' : 'Registra tu primer ingreso o gasto. Aquí verás cómo se mueve tu dinero.'}</p>
+              {movimientos.length > 0 && <button type="button" className="miplata-btn-cancelar" onClick={() => { setFiltro('todo'); setFiltroTipo('todos'); setBusqueda(''); }}>Limpiar filtros</button>}
+            </div>
+          ) : (
+            <ul className="miplata-lista">
+              {listaFiltrada.map((m) => {
+                const catObj = todasCategorias.find((c) => c.id === m.categoria);
+                const nombre = m.descripcion || catObj?.label || 'Movimiento';
+                return (
+                  <li key={m.id} className={`miplata-item ${editando === m.id ? 'miplata-item-editando' : ''}`}>
+                    <span className={`miplata-item-icono ${m.tipo}`} aria-hidden="true">{ICONOS[m.categoria] || ICONOS.otro}</span>
+                    <div className="miplata-item-info">
+                      <span className="miplata-item-desc" title={nombre}>{nombre}</span>
+                      <span className="miplata-item-fecha">{catObj?.label || 'Otro'} · {formatearFecha(m.fecha)}</span>
+                    </div>
+                    <span className={`miplata-item-monto ${m.tipo === 'ingreso' ? 'verde' : 'rojo'}`}>{m.tipo === 'ingreso' ? '+' : '−'} {formatearSoles(m.monto)}</span>
+                    <div className="miplata-item-acciones">
+                      <button type="button" className="miplata-item-editar" aria-label={`Editar ${nombre}`} onClick={() => editar(m)}>Editar</button>
+                      <button type="button" className="miplata-item-eliminar" aria-label={`Eliminar ${nombre}`} onClick={() => {
+                        if (window.confirm(`¿Eliminar «${nombre}»? Esta acción no se puede deshacer.`)) {
+                          setMensaje('');
+                          setError('');
+                          try {
+                            eliminarMovimiento(setMovimientos, m.id);
+                            if (editando === m.id) limpiarFormulario();
+                            setMensaje('Movimiento eliminado.');
+                          } catch (problemaGuardado) {
+                            setError(problemaGuardado.message);
+                          }
+                        }
+                      }}>×</button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {listaFiltrada.some((m) => m.tipo === 'gasto') && <div className="miplata-distribucion"><h2>¿En qué se va tu plata?</h2><GraficoDona movimientos={listaFiltrada} categorias={CATEGORIAS_GASTO} /></div>}
+        </section>
+      </div>
     </div>
   );
 }

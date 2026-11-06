@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { useAuth } from './context/auth.js';
 import RutaProtegida from './components/RutaProtegida.jsx';
 import Navbar from './components/Navbar.jsx';
 import AsistenteBurbuja from './components/AsistenteBurbuja.jsx';

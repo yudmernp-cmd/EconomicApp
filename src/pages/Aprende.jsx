@@ -34,14 +34,6 @@ function Aprende() {
   const iniciarLeccion = (id) => {
     const leccion = LECCIONES.find((l) => l.id === id);
     
-    // Mezclar las preguntas y las opciones de cada pregunta
-    const preguntasMezcladas = mezclarArreglo(leccion.preguntas).map((p) => ({
-      ...p,
-      opciones: mezclarArreglo(p.opciones),
-      // Volvemos a buscar el índice de la respuesta correcta tras mezclar
-      indiceCorrecto: p.opciones.indexOf(p.opciones[p.correcta]) === -1 ? p.correcta : p.opciones.indexOf(p.opciones[p.correcta])
-    }));
-
     // TRUCO: Al mezclar las opciones, el índice de la respuesta correcta cambia.
     // Creamos un arreglo temporal para encontrar el nuevo índice.
     const preguntasListas = mezclarArreglo(leccion.preguntas).map((p) => {

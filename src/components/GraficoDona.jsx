@@ -26,9 +26,11 @@ function useNumeroAnimado(objetivo, duracion = 700) {
   useEffect(() => {
     const reducir = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (reducir) {
-      previo.current = objetivo;
-      setValor(objetivo);
-      return;
+      const raf = requestAnimationFrame(() => {
+        previo.current = objetivo;
+        setValor(objetivo);
+      });
+      return () => cancelAnimationFrame(raf);
     }
     const desde = previo.current;
     const inicio = performance.now();
@@ -79,7 +81,6 @@ function GraficoDona({ movimientos, categorias }) {
     const entradas = Object.entries(suma).filter(([, monto]) => monto > 0);
     const totalGastado = entradas.reduce((acc, [, monto]) => acc + monto, 0);
 
-    let acumulado = 0;
     const lista = entradas
       .map(([id, monto]) => ({
         id,
@@ -89,12 +90,11 @@ function GraficoDona({ movimientos, categorias }) {
         color: COLORES[id] || COLORES.otro,
       }))
       .sort((a, b) => b.monto - a.monto)
-      .map((d) => {
-        const largo = d.fraccion * CIRCUNFERENCIA;
-        const item = { ...d, largo, inicio: acumulado };
-        acumulado += largo;
-        return item;
-      });
+      .map((d, indice, ordenados) => ({
+        ...d,
+        largo: d.fraccion * CIRCUNFERENCIA,
+        inicio: ordenados.slice(0, indice).reduce((suma, item) => suma + item.fraccion * CIRCUNFERENCIA, 0),
+      }));
 
     return { datos: lista, total: totalGastado };
   }, [movimientos, categorias]);

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import './Navbar.css';
 
 const Iconos = {
@@ -107,20 +107,27 @@ const ITEMS = [
 
 function Navbar() {
   return (
-    <nav className="navbar">
+    <nav className="navbar" aria-label="Navegación principal">
+      <Link to="/" className="navbar-marca" aria-label="Cuadra tus Lucas, inicio">
+        <img src="/logo.svg" alt="" />
+        <span>Cuadra tus<br /><strong>Lucas<span className="navbar-punto">.</span></strong></span>
+      </Link>
+      <span className="navbar-seccion">TU ESPACIO FINANCIERO</span>
+      <div className="navbar-enlaces">
       {ITEMS.map((item) => {
         const Icono = Iconos[item.key];
         return (
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.path === "/"}
             className={({ isActive }) =>
               'navbar-item' + (isActive ? ' activo' : '')
             }
           >
             {({ isActive }) => (
               <>
-                <span className="navbar-icono">
+                <span className="navbar-icono" aria-hidden="true">
                   <Icono activo={isActive} />
                 </span>
                 <span className="navbar-label">{item.label}</span>
@@ -129,6 +136,13 @@ function Navbar() {
           </NavLink>
         );
       })}
+      </div>
+      <div className="navbar-consejo">
+        <span aria-hidden="true">✦</span>
+        <strong>Un paso a la vez.</strong>
+        <p>Cada gasto que registras te ayuda a decidir mejor.</p>
+      </div>
+      <span className="navbar-pie">Hecho para tu familia · Perú</span>
     </nav>
   );
 }

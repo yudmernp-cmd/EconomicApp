@@ -13,3 +13,16 @@
     transform: translateY(0);
   }
 }
+
+/* El contenido mantiene un ancho de lectura útil en todas las pantallas. */
+@media (min-width: 640px) {
+  .contenido { padding: 32px; padding-bottom: 120px; }
+}
+@media (min-width: 1000px) {
+  .app { padding-left: 220px; }
+  .contenido { padding: 40px 38px 100px; }
+  .perfil-contenedor, .prestamos-contenedor, .aprende-contenedor { max-width: 780px; margin: 0 auto; }
+  .app .asistente-wrapper { left: auto; right: max(24px, calc((100vw - 1440px) / 2 + 24px)); transform: none; width: 380px; }
+  .app .asistente-burbuja { bottom: 26px; right: 0; }
+  .app .asistente-panel { bottom: 24px; height: min(640px, calc(100dvh - 48px)); border-radius: 20px; }
+}

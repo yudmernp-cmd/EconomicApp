@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePerfil, useMovimientos, useDeudas } from '../storage.js';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth.js';
 import Card from '../components/Card.jsx';
 import './Perfil.css';
 
@@ -21,7 +21,6 @@ function Perfil() {
   const [exportando, setExportando] = useState(false);
   const [urlSheets, setUrlSheets] = useState(null);
 
-  useEffect(() => { setForm(perfil); }, [perfil]);
 
   const guardar = (e) => {
     e.preventDefault();
@@ -34,6 +33,7 @@ function Perfil() {
     if (confirm('¿Borrar TODOS tus datos? Esto no se puede deshacer.')) {
       setMovimientos([]); setDeudas([]);
       localStorage.removeItem('finanzas_lecciones_vistas');
+      localStorage.removeItem('finanzas_presupuesto');
       alert('Datos borrados.');
     }
   };

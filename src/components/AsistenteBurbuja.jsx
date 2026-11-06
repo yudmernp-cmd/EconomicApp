@@ -13,6 +13,7 @@ import {
   sugerenciasRapidas,
 } from '../utils/asistente.js';
 import './AsistenteBurbuja.css';
+import { hoyISO } from '../utils/formatos.js';
 
 function AsistenteBurbuja() {
   const [abierto, setAbierto] = useState(false);
@@ -25,8 +26,7 @@ function AsistenteBurbuja() {
   ]);
   const [input, setInput] = useState('');
   const [escribiendo, setEscribiendo] = useState(false);
-  const [sugerencia, setSugerencia] = useState(null);
-  const [tieneNueva, setTieneNueva] = useState(false);
+  const [tieneNueva, setTieneNueva] = useState(true);
   const chatRef = useRef(null);
 
   const [movimientos] = useMovimientos();
@@ -38,7 +38,7 @@ function AsistenteBurbuja() {
   const { total: totalDeudas, cuotaMensual: cuotaDeudas } =
     calcularTotalDeudas(deudas);
 
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = hoyISO();
   const movimientosRecientes = movimientos.filter(
     (m) => m.fecha === hoy
   ).length;
@@ -52,12 +52,7 @@ function AsistenteBurbuja() {
     leccionesVistas: leccionesVistas.length,
   };
 
-  useEffect(() => {
-    const s = generarSugerencia(contexto);
-    setSugerencia(s);
-    setTieneNueva(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [sugerencia] = useState(() => generarSugerencia(contexto));
 
   useEffect(() => {
     if (chatRef.current) {

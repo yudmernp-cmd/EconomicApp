@@ -1,357 +1,160 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovimientos, usePerfil, calcularResumen } from '../storage.js';
-import { formatearSoles } from '../utils/formatos.js';
+import { useLocalStorage } from '../hooks/useLocalStorage.js';
+import { formatearSoles, formatearFecha, hoyISO } from '../utils/formatos.js';
+import { obtenerPeriodo } from '../utils/finanzas.js';
 import './Inicio.css';
 
+function Flecha({ entrada = false }) {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={entrada ? { transform: 'rotate(180deg)' } : undefined}><path d="M6 18 18 6M6 6h12v12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
 const CATEGORIAS = [
-  { id: 'casa', label: 'Vivienda', icon: '🏠', color: 'verde' },
-  { id: 'comida', label: 'Alimentación', icon: '🍽️', color: 'naranja' },
-  { id: 'pasaje', label: 'Transporte', icon: '🚗', color: 'azul' },
-  { id: 'otro', label: 'Otros', icon: '⋯', color: 'purpura' },
+  { id: 'comida', label: 'Alimentación', icono: '◒', color: '#ca8042' },
+  { id: 'casa', label: 'Vivienda', icono: '⌂', color: '#2b795c' },
+  { id: 'pasaje', label: 'Transporte', icono: <Flecha />, color: '#5484aa' },
+  { id: 'salud', label: 'Salud', icono: '+', color: '#be6878' },
+  { id: 'escuela', label: 'Educación', icono: '▤', color: '#8a74ae' },
+  { id: 'gusto', label: 'Gustos', icono: '☆', color: '#b39835' },
+  { id: 'otro', label: 'Otros', icono: '···', color: '#77857b' },
 ];
+const INGRESOS = { sueldo: 'Sueldo', venta: 'Ventas', regalo: 'Regalo', otro: 'Otro ingreso' };
+const CICLOS = { semanal: 'Esta semana', quincenal: 'Esta quincena', mensual: 'Este mes', irregular: 'Este mes' };
+
+function Presupuesto({ gastos, mes }) {
+  const [presupuesto, setPresupuesto] = useLocalStorage('finanzas_presupuesto', { monto: 0 });
+  const limite = Number(presupuesto?.monto) || 0;
+  const [editando, setEditando] = useState(false);
+  const [monto, setMonto] = useState('');
+  const [mensaje, setMensaje] = useState('');
+  const [error, setError] = useState('');
+  const porcentaje = limite > 0 ? Math.round(gastos / limite * 100) : 0;
+  const restante = Math.round((limite - gastos) * 100) / 100;
+
+  function guardar(evento) {
+    evento.preventDefault();
+    const valor = Number(monto);
+    if (!Number.isFinite(valor) || valor <= 0 || valor > 999999999.99) {
+      setError('Ingresa un monto mayor que cero y menor a S/ 1 000 000 000.');
+      return;
+    }
+    try {
+      setPresupuesto({ monto: Math.round(valor * 100) / 100 });
+      setEditando(false);
+      setMensaje('Presupuesto guardado.');
+      setError('');
+    } catch (fallo) {
+      setMensaje('');
+      setError(fallo.message);
+    }
+  }
+
+  function quitarLimite() {
+    try {
+      setPresupuesto({ monto: 0 });
+      setMensaje('Límite eliminado. Tus movimientos se conservan.');
+      setError('');
+    } catch (fallo) {
+      setMensaje('');
+      setError(fallo.message);
+    }
+  }
+
+  return (
+    <section className={`inicio-panel inicio-presupuesto ${limite && restante < 0 ? 'presupuesto-excedido' : ''}`} aria-labelledby="presupuesto-titulo">
+      <div className="inicio-panel-heading">
+        <div>
+          <span className="inicio-eyebrow">TU PLAN DEL MES</span>
+          <h2 id="presupuesto-titulo">Presupuesto familiar</h2>
+        </div>
+        <span className="inicio-panel-symbol" aria-hidden="true">◎</span>
+      </div>
+      <p className="inicio-ayuda">Un límite de gastos para cuidar tus lucas. Se aplica a cada mes calendario.</p>
+      {limite > 0 ? (
+        <>
+          <div className="presupuesto-cifras"><strong>{formatearSoles(gastos)}</strong><span>de {formatearSoles(limite)}</span></div>
+          <progress aria-label={`Presupuesto de ${mes} utilizado`} max="100" value={Math.min(100, porcentaje)} />
+          <div className="presupuesto-estado"><span>{porcentaje}% utilizado · {mes}</span><strong>{restante < 0 ? 'Límite superado' : 'Dentro del límite'}</strong></div>
+          <p className="presupuesto-restante">{restante < 0 ? <>Te excediste en <strong>{formatearSoles(-restante)}</strong>.</> : <>Te quedan <strong>{formatearSoles(restante)}</strong> para gastar este mes.</>}</p>
+        </>
+      ) : <div className="presupuesto-sin-limite"><strong>Un pequeño plan, más tranquilidad.</strong><p>Ya registraste {formatearSoles(gastos)} en gastos este mes. Define cuánto quieres gastar en total.</p></div>}
+      {editando ? (
+        <form className="presupuesto-form" onSubmit={guardar}>
+          <label htmlFor="presupuesto-monto">Límite mensual (S/)</label>
+          <input id="presupuesto-monto" type="number" inputMode="decimal" min="0.01" max="999999999.99" step="0.01" required value={monto} onChange={(e) => setMonto(e.target.value)} aria-invalid={Boolean(error)} aria-describedby={error ? 'presupuesto-error' : undefined} autoFocus />
+          <div className="presupuesto-form-acciones"><button type="submit" className="inicio-btn inicio-btn-verde">Guardar límite</button><button type="button" className="inicio-btn inicio-btn-suave" onClick={() => { setEditando(false); setError(''); }}>Cancelar</button></div>
+        </form>
+      ) : (
+        <div className="presupuesto-form-acciones">
+          <button className="inicio-btn inicio-btn-suave" onClick={() => { setMonto(limite ? String(limite) : ''); setEditando(true); setMensaje(''); setError(''); }}>{limite ? 'Editar presupuesto' : '+ Crear presupuesto'}</button>
+          {limite > 0 && <button className="inicio-text-button" onClick={quitarLimite}>Quitar límite</button>}
+        </div>
+      )}
+      {error && <p id="presupuesto-error" role="alert">{error}</p>}
+      <p className="inicio-status" role="status">{mensaje}</p>
+    </section>
+  );
+}
 
 function Inicio() {
   const [movimientos] = useMovimientos();
   const [perfil] = usePerfil();
   const resumen = calcularResumen(movimientos, perfil);
-
-  const hora = new Date().getHours();
-  const saludo =
-    hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-
-  // Calcular gastos por categoría
-  const gastosPorCategoria = CATEGORIAS.map((cat) => {
-    const total = movimientos
-      .filter((m) => m.tipo === 'gasto' && m.categoria === cat.id)
-      .reduce((sum, m) => sum + Number(m.monto), 0);
-    const porcentaje =
-      resumen.gastos > 0 ? (total / resumen.gastos) * 100 : 0;
-    return { ...cat, total, porcentaje };
+  const hoy = hoyISO();
+  const periodo = obtenerPeriodo(perfil.cicloIngreso);
+  const mesActual = obtenerPeriodo('mensual');
+  const delCiclo = movimientos.filter((m) => m.fecha >= periodo.inicio && m.fecha <= periodo.fin && m.fecha <= hoy);
+  const gastosMes = movimientos.filter((m) => m.tipo === 'gasto' && m.fecha >= mesActual.inicio && m.fecha <= hoy).reduce((suma, m) => suma + Math.round(Number(m.monto) * 100), 0) / 100;
+  const categorias = CATEGORIAS.map((categoria) => {
+    const total = delCiclo.filter((m) => m.tipo === 'gasto' && (m.categoria === categoria.id || (categoria.id === 'otro' && !CATEGORIAS.some((c) => c.id === m.categoria)))).reduce((suma, m) => suma + Math.round(Number(m.monto) * 100), 0) / 100;
+    return { ...categoria, total, porcentaje: resumen.gastos > 0 ? total / resumen.gastos * 100 : 0 };
   });
-
-  // Últimos 3 movimientos
-  const ultimosMovimientos = [...movimientos]
-    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-    .slice(0, 3);
-
-  const totalGastado = resumen.gastos;
-  const ahorro = Math.max(0, resumen.ingresos - resumen.gastos);
-  const porcentajeGastado =
-    resumen.ingresos > 0
-      ? Math.min(100, (resumen.gastos / resumen.ingresos) * 100)
-      : 0;
-  const porcentajeAhorro =
-    resumen.ingresos > 0
-      ? Math.min(100, (ahorro / resumen.ingresos) * 100)
-      : 0;
+  const recientes = [...movimientos].filter((m) => m.fecha <= hoy).sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 4);
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const mes = new Date().toLocaleDateString('es-PE', { month: 'long' });
 
   return (
-    <div className="inicio">
-      {/* ===== HEADER ===== */}
-      <header className="inicio-header">
-        <div className="inicio-logo-titulo">
-          <div className="inicio-logo-mini">
-            <img src="/logo.svg" alt="Cuadra tus Lucas" />
-          </div>
-          <div className="inicio-marca">
-            <h1 className="inicio-marca-titulo">
-              Cuadra tus
-              <br />
-              <span className="inicio-marca-grande">Lucas</span>
-            </h1>
-            <p className="inicio-marca-eslogan">Tu familia, en orden</p>
-          </div>
-        </div>
-        <div className="inicio-avatar">
-          {perfil.nombreFamilia.charAt(0).toUpperCase()}
-        </div>
+    <div className="inicio-dashboard">
+      <header className="inicio-cabecera">
+        <div><span className="inicio-eyebrow">TU FAMILIA, EN ORDEN</span><h1>{saludo},<br /><span>{perfil.nombreFamilia || 'familia'}.</span></h1><p>Cada decisión pequeña cuenta.</p></div>
+        <Link className="inicio-avatar" to="/perfil" aria-label="Ver perfil de la familia">{(perfil.nombreFamilia || 'F').charAt(0).toUpperCase()}</Link>
       </header>
+      <div className="inicio-periodo"><span className="inicio-periodo-punto" />{CICLOS[perfil.cicloIngreso] || 'Este mes'}<span>{formatearFecha(periodo.inicio)} — {formatearFecha(periodo.fin)}</span></div>
 
-      {/* ===== BANNER INGRESO MENSUAL ===== */}
-      <div className="inicio-banner">
-        <div className="banner-info">
-          <span className="banner-label">Ingreso mensual familiar</span>
-          <span className="banner-monto">
-            {formatearSoles(resumen.ingresos)}
-          </span>
-          <span className="banner-fecha">
-            Este mes · {resumen.diasRestantes} días restantes
-          </span>
-        </div>
-        <div className="banner-icono">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <rect
-              x="8"
-              y="14"
-              width="32"
-              height="24"
-              rx="3"
-              fill="#F8D548"
-            />
-            <rect
-              x="8"
-              y="14"
-              width="32"
-              height="8"
-              rx="3"
-              fill="#E8C230"
-            />
-            <rect x="30" y="22" width="14" height="10" rx="2" fill="#0F5132" />
-            <circle cx="37" cy="27" r="2" fill="#F8D548" />
-          </svg>
-        </div>
+      <section className="inicio-balance" aria-labelledby="balance-titulo">
+        <div className="inicio-balance-top"><span id="balance-titulo">Balance de tu familia</span><span className="inicio-balance-insignia">EN SOLES · PEN</span></div>
+        <div className="inicio-balance-monto">{formatearSoles(resumen.disponible)}</div>
+        <p>{resumen.disponible < 0 ? 'Tus gastos superan los ingresos registrados en este período.' : 'La diferencia entre lo que entra y lo que sale en este período.'}</p>
+        <div className="inicio-balance-bottom"><span>{resumen.diasRestantes} {resumen.diasRestantes === 1 ? 'día restante' : 'días restantes'} del período</span><Link to="/mi-plata" className="inicio-btn inicio-btn-amarillo"><span aria-hidden="true">+</span> Registrar movimiento</Link></div>
+      </section>
+
+      <div className="inicio-metricas">
+        <section className="inicio-metrica"><span className="inicio-metrica-icono entrada" aria-hidden="true"><Flecha entrada /></span><div><span>Ingresos del período</span><strong>{formatearSoles(resumen.ingresos)}</strong></div></section>
+        <section className="inicio-metrica"><span className="inicio-metrica-icono salida" aria-hidden="true"><Flecha /></span><div><span>Gastos del período</span><strong>{formatearSoles(resumen.gastos)}</strong></div></section>
       </div>
 
-      {/* ===== CATEGORÍAS ===== */}
-      <div className="inicio-categorias">
-        {gastosPorCategoria.map((cat) => (
-          <div key={cat.id} className="categoria-card">
-            <div className={`categoria-icono cat-${cat.color}`}>
-              <span>{cat.icon}</span>
-            </div>
-            <span className="categoria-label">{cat.label}</span>
-            <span className="categoria-monto">{formatearSoles(cat.total)}</span>
-            <div className="categoria-barra">
-              <div
-                className={`categoria-barra-fill barra-${cat.color}`}
-                style={{ width: `${cat.porcentaje}%` }}
-              ></div>
-            </div>
-            <span className="categoria-porcentaje">
-              {cat.porcentaje.toFixed(0)}%
-            </span>
-          </div>
-        ))}
+      <div className="inicio-grid">
+        <section className="inicio-panel" aria-labelledby="categorias-titulo">
+          <div className="inicio-panel-heading"><div><span className="inicio-eyebrow">CADA SOL TIENE SU LUGAR</span><h2 id="categorias-titulo">¿En qué se va tu plata?</h2></div></div>
+          <p className="inicio-ayuda">Distribución de los gastos de este período.</p>
+          <div className="inicio-categorias-lista">{categorias.map((cat) => <div key={cat.id} className="inicio-categoria-fila"><span className="inicio-categoria-icono" style={{ color: cat.color }} aria-hidden="true">{cat.icono}</span><div className="inicio-categoria-detalle"><div><span>{cat.label}</span><strong>{formatearSoles(cat.total)}</strong></div><div className="inicio-categoria-barra"><span style={{ width: `${Math.min(100, cat.porcentaje)}%`, background: cat.color }} /></div></div><span className="inicio-categoria-porcentaje">{Math.round(cat.porcentaje)}%</span></div>)}</div>
+          {resumen.gastos === 0 && <p className="inicio-ayuda inicio-sin-gastos">Registra tu primer gasto para ver cómo se distribuye.</p>}
+        </section>
+        <Presupuesto gastos={gastosMes} mes={mes} />
       </div>
 
-      {/* ===== DISPONIBLE ===== */}
-      <div className="inicio-disponible">
-        <div className="disponible-icono">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 3C8 3 5 6 5 10C5 14 7 16 8 18H16C17 16 19 14 19 10C19 6 16 3 12 3Z"
-              fill="#0F5132"
-            />
-            <circle cx="10" cy="10" r="1" fill="white" />
-            <circle cx="14" cy="10" r="1" fill="white" />
-            <path
-              d="M10 14C10.5 14.5 13.5 14.5 14 14"
-              stroke="white"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-        <div className="disponible-info">
-          <span className="disponible-label">Disponible</span>
-          <span className="disponible-monto">
-            {formatearSoles(resumen.disponible)}
-          </span>
-        </div>
-        <Link to="/mi-plata" className="disponible-link">
-          Ver detalles →
-        </Link>
-      </div>
-
-      {/* ===== RESUMEN DEL MES ===== */}
-      <h2 className="seccion-titulo">Resumen del mes</h2>
-
-      <div className="inicio-resumen-cards">
-        <div className="resumen-fila">
-          <div className="resumen-fila-icono resumen-fila-icono-verde">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <rect
-                x="3"
-                y="6"
-                width="18"
-                height="14"
-                rx="2.5"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="2" />
-            </svg>
-          </div>
-          <div className="resumen-fila-info">
-            <span className="resumen-fila-label">Total gastado</span>
-            <div className="resumen-fila-barra">
-              <div
-                className="resumen-fila-barra-fill"
-                style={{ width: `${porcentajeGastado}%` }}
-              ></div>
-            </div>
-          </div>
-          <div className="resumen-fila-valor">
-            <span className="resumen-fila-monto">
-              {formatearSoles(totalGastado)}
-            </span>
-            <span className="resumen-fila-porcentaje">
-              {porcentajeGastado.toFixed(0)}%
-            </span>
-          </div>
-        </div>
-
-        <div className="resumen-fila">
-          <div className="resumen-fila-icono resumen-fila-icono-purpura">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M4 20V10L12 4L20 10V20H4Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 20V14H15V20"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div className="resumen-fila-info">
-            <span className="resumen-fila-label">Ahorro</span>
-            <div className="resumen-fila-barra">
-              <div
-                className="resumen-fila-barra-fill barra-purpura"
-                style={{ width: `${porcentajeAhorro}%` }}
-              ></div>
-            </div>
-          </div>
-          <div className="resumen-fila-valor">
-            <span className="resumen-fila-monto">{formatearSoles(ahorro)}</span>
-            <span className="resumen-fila-porcentaje">
-              {porcentajeAhorro.toFixed(0)}%
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== ÚLTIMOS MOVIMIENTOS ===== */}
-      <div className="inicio-movimientos-header">
-        <h2 className="seccion-titulo">Últimos movimientos</h2>
-        <Link to="/mi-plata" className="ver-todos">
-          Ver todos →
-        </Link>
-      </div>
-
-      {ultimosMovimientos.length === 0 ? (
-        <div className="inicio-vacio">
-          <p>Aún no hay movimientos</p>
-        </div>
-      ) : (
-        <div className="inicio-movimientos">
-          {ultimosMovimientos.map((m) => {
-            const cat = CATEGORIAS.find((c) => c.id === m.categoria);
-            const icono = cat?.icon || '📦';
-            const color = cat?.color || 'gris';
-            return (
-              <div key={m.id} className="movimiento-item">
-                <div className={`movimiento-icono mov-${color}`}>
-                  <span>{icono}</span>
-                </div>
-                <div className="movimiento-info">
-                  <span className="movimiento-nombre">
-                    {m.descripcion || cat?.label || 'Movimiento'}
-                  </span>
-                  <span className="movimiento-categoria">
-                    {cat?.label || 'Otro'}
-                  </span>
-                </div>
-                <div className="movimiento-derecha">
-                  <span
-                    className={
-                      m.tipo === 'ingreso'
-                        ? 'movimiento-monto verde'
-                        : 'movimiento-monto rojo'
-                    }
-                  >
-                    {m.tipo === 'ingreso' ? '+' : '−'}{' '}
-                    {formatearSoles(m.monto)}
-                  </span>
-                  <span className="movimiento-fecha">
-                    {new Date(m.fecha).toLocaleDateString('es-PE', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ===== ACCIONES RÁPIDAS ===== */}
-      <h2 className="seccion-titulo" style={{ marginTop: '20px' }}>
-        Acciones rápidas
-      </h2>
-
-      <div className="acciones">
-        <Link to="/mi-plata" className="accion">
-          <span className="accion-icono">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect
-                x="3"
-                y="6"
-                width="18"
-                height="14"
-                rx="2.5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              />
-              <circle
-                cx="12"
-                cy="13"
-                r="3"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              />
-            </svg>
-          </span>
-          <span className="accion-label">Registrar</span>
-        </Link>
-
-        <Link to="/prestamos" className="accion">
-          <span className="accion-icono">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3L2 20H22L12 3Z"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M12 10V14"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <circle cx="12" cy="17" r="1.1" fill="currentColor" />
-            </svg>
-          </span>
-          <span className="accion-label">Préstamos</span>
-        </Link>
-
-        <Link to="/aprende" className="accion">
-          <span className="accion-icono">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 7L12 3L21 7L12 11L3 7Z"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 10V15C6 15 8 18 12 18C16 18 18 15 18 15V10"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
-          <span className="accion-label">Aprende</span>
-        </Link>
-      </div>
+      <section className="inicio-panel inicio-recientes" aria-labelledby="recientes-titulo">
+        <div className="inicio-panel-heading"><div><span className="inicio-eyebrow">PASO A PASO</span><h2 id="recientes-titulo">Últimos movimientos</h2></div><Link to="/mi-plata" className="inicio-text-link">Ver todos <span aria-hidden="true"><Flecha /></span></Link></div>
+        {recientes.length === 0 ? <div className="inicio-vacio"><span className="inicio-vacio-icono" aria-hidden="true"><Flecha /></span><h3>Tu historia empieza con un movimiento</h3><p>Anota un ingreso o un gasto. Aquí verás cómo avanza la economía de tu familia.</p><Link to="/mi-plata" className="inicio-btn inicio-btn-verde">Registrar mi primer movimiento</Link></div> : <ul className="inicio-recientes-lista">{recientes.map((movimiento) => {
+          const categoria = CATEGORIAS.find((c) => c.id === movimiento.categoria) || CATEGORIAS.at(-1);
+          const ingreso = movimiento.tipo === 'ingreso';
+          const etiqueta = ingreso ? (INGRESOS[movimiento.categoria] || 'Ingreso') : categoria.label;
+          return <li key={movimiento.id}><span className={`inicio-reciente-icono ${ingreso ? 'entrada' : 'salida'}`} aria-hidden="true">{ingreso ? <Flecha entrada /> : categoria.icono}</span><div className="inicio-reciente-info"><strong>{movimiento.descripcion || etiqueta}</strong><span>{etiqueta} · {formatearFecha(movimiento.fecha)}</span></div><strong className={`inicio-reciente-monto ${ingreso ? 'entrada' : ''}`}>{ingreso ? '+' : '−'} {formatearSoles(movimiento.monto)}</strong></li>;
+        })}</ul>}
+      </section>
+      <div className="inicio-explora"><Link to="/prestamos"><span aria-hidden="true"><Flecha /></span><div><strong>Antes de pedir un préstamo</strong><p>Compara cuánto pagarías realmente.</p></div><span aria-hidden="true">→</span></Link><Link to="/aprende"><span aria-hidden="true">✦</span><div><strong>Aprende a cuidar tus lucas</strong><p>Ideas sencillas para tu día a día.</p></div><span aria-hidden="true">→</span></Link></div>
     </div>
   );
 }

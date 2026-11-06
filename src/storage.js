@@ -1,4 +1,5 @@
 import { useLocalStorage } from './hooks/useLocalStorage.js';
+import { resumirMovimientos } from './utils/finanzas.js';
 
 // Claves de almacenamiento
 export const CLAVES = {
@@ -29,83 +30,14 @@ export function useDeudas() {
 // ===== CÁLCULOS DE MOVIMIENTOS =====
 
 export function calcularResumen(movimientos, perfil) {
-  const hoy = new Date();
-  const inicioCiclo = new Date();
-
-  // Calcular inicio del ciclo según configuración
-  switch (perfil.cicloIngreso) {
-    case 'semanal':
-      inicioCiclo.setDate(hoy.getDate() - 7);
-      break;
-    case 'quincenal':
-      inicioCiclo.setDate(hoy.getDate() - 15);
-      break;
-    case 'mensual':
-      inicioCiclo.setMonth(hoy.getMonth() - 1);
-      break;
-    default:
-      inicioCiclo.setDate(hoy.getDate() - 7);
-  }
-
-  // Filtrar movimientos del ciclo
-  const delCiclo = movimientos.filter((m) => {
-    const fecha = new Date(m.fecha);
-    return fecha >= inicioCiclo && fecha <= hoy;
-  });
-
-  const ingresos = delCiclo
-    .filter((m) => m.tipo === 'ingreso')
-    .reduce((sum, m) => sum + Number(m.monto), 0);
-
-  const gastos = delCiclo
-    .filter((m) => m.tipo === 'gasto')
-    .reduce((sum, m) => sum + Number(m.monto), 0);
-
-  const disponible = ingresos - gastos;
-
-  // Calcular fin del ciclo
-  const finCiclo = new Date(inicioCiclo);
-  switch (perfil.cicloIngreso) {
-    case 'semanal':
-      finCiclo.setDate(inicioCiclo.getDate() + 7);
-      break;
-    case 'quincenal':
-      finCiclo.setDate(inicioCiclo.getDate() + 15);
-      break;
-    case 'mensual':
-      finCiclo.setMonth(inicioCiclo.getMonth() + 1);
-      break;
-    default:
-      finCiclo.setDate(inicioCiclo.getDate() + 7);
-  }
-
-  const diasRestantes = Math.max(
-    1,
-    Math.ceil((finCiclo - hoy) / (1000 * 60 * 60 * 24))
-  );
-
-  const disponiblePorDia = disponible > 0 ? disponible / diasRestantes : 0;
-
-  // Estado del semáforo
-  let estado = 'verde';
-  if (disponible <= 0) estado = 'rojo';
-  else if (disponiblePorDia < 10) estado = 'amarillo';
-
-  return {
-    ingresos,
-    gastos,
-    disponible,
-    diasRestantes,
-    disponiblePorDia,
-    estado,
-  };
+  return resumirMovimientos(movimientos, perfil.cicloIngreso);
 }
 
 export function agregarMovimiento(setMovimientos, movimiento) {
   setMovimientos((prev) => [
     ...prev,
     {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       ...movimiento,
     },
   ]);
@@ -189,7 +121,7 @@ export function agregarDeuda(setDeudas, deuda) {
   setDeudas((prev) => [
     ...prev,
     {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       ...deuda,
     },
   ]);
