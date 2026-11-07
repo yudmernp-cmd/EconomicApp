@@ -1,0 +1,96 @@
+.plan-familiar { border: 1px solid #e2e7dc; background: #fff; border-radius: 22px; padding: 28px; min-width: 0; scroll-margin-top: 24px; }
+.plan-cabecera { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 23px; }
+.plan-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: 1.6px; color: #60735f; }
+.plan-cabecera h2 { margin: 6px 0; font-size: 27px; color: #244c35; }
+.plan-cabecera p { font-size: 13px; color: #667363; }
+.plan-sello { display: grid; place-items: center; background: #edf2e5; color: #5d794e; width: 58px; height: 58px; border-radius: 18px; flex: none; }
+.plan-vistas { display: flex; gap: 6px; padding: 5px; border-radius: 13px; background: #f2f4ee; margin-bottom: 22px; }
+.plan-vistas > button { flex: 1; min-height: 45px; padding: 10px; border-radius: 9px; font-size: 12px; color: #546a53; background: transparent; }
+.plan-vistas > button[aria-pressed='true'] { background: #22513a; color: #fff; }
+.plan-vistas span { margin-left: 5px; padding: 1px 6px; border-radius: 10px; background: #ffffff22; }
+.plan-resumen { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 10px 0; flex-wrap: wrap; }
+.plan-resumen > div > span { display: block; font-size: 12px; color: #60715e; margin-bottom: 5px; }
+.plan-resumen > div > strong { font-family: var(--fuente-titulo); color: #285036; font-size: 29px; letter-spacing: -1px; overflow-wrap: anywhere; }
+.plan-boton { min-height: 44px; border-radius: 10px; padding: 10px 16px; font-size: 12px; }
+.plan-primario { color: #fff; background: #24543b; }
+.plan-primario:hover { background: #163f2a; }
+.plan-suave { background: #edf3e5; color: #375e39; }
+.plan-nota { font-size: 12px; color: #63725f; line-height: 1.7; max-width: 80ch; margin: 15px 0 22px; }
+.plan-mes { text-transform: capitalize; background: #f1f4ea; color: #546a43; font-size: 11px; border-radius: 30px; padding: 8px 14px; }
+.plan-metas-grid, .plan-categorias-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.plan-meta, .plan-categoria { padding: 21px; border: 1px solid #e3e8dc; border-radius: 16px; min-width: 0; background: #fcfdf9; }
+.plan-meta-completa { border-color: #a7c19a; background: #f2f7ed; }
+.plan-meta-cabecera { display: flex; align-items: center; gap: 10px; }
+.plan-meta-cabecera > div { flex: 1; min-width: 0; }
+.plan-meta-cabecera h3 { font-size: 15px; color: #2d5038; overflow-wrap: anywhere; }
+.plan-meta-cabecera > div > span { font-size: 10px; color: #657760; }
+.plan-meta-icono { color: #7c9666; flex: none; }
+.plan-editar { min-height: 44px; background: transparent; color: #416641; font-size: 11px; padding: 8px; border-radius: 8px; }
+.plan-editar:hover { background: #eaf0e3; }
+.plan-meta-cifras { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin: 24px 0 12px; }
+.plan-meta-cifras strong { color: #315437; font-family: var(--fuente-titulo); font-size: 29px; letter-spacing: -.8px; overflow-wrap: anywhere; }
+.plan-meta-cifras > span, .plan-categoria-cifras > span { font-size: 11px; color: #64745e; }
+.plan-familiar progress { display: block; width: 100%; height: 8px; appearance: none; border: 0; border-radius: 10px; overflow: hidden; background: #e9eddf; }
+.plan-familiar progress::-webkit-progress-bar { background: #e9eddf; }
+.plan-familiar progress::-webkit-progress-value { background: #6b8c55; border-radius: 10px; }
+.plan-familiar progress::-moz-progress-bar { background: #6b8c55; }
+.plan-meta-progreso { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 10px; color: #5e7553; margin-top: 10px; }
+.plan-meta-consejo { font-size: 12px; margin: 18px 0; color: #65765d; }
+.plan-meta > .plan-boton { margin-top: 16px; }
+.plan-eliminar { display: block; font-size: 10px; min-height: 40px; padding: 8px 0; background: transparent; color: #8a5e50; text-decoration: underline; text-underline-offset: 3px; margin-top: 7px; }
+.plan-formulario { background: #f3f5ed; border: 1px solid #dae3d0; padding: 22px; border-radius: 15px; margin: 18px 0; }
+.plan-formulario h3 { color: #36553b; margin-bottom: 18px; }
+.plan-formulario label, .plan-aporte label, .plan-limite-form label { display: block; font-size: 12px; color: #3d583d; font-weight: 600; margin-bottom: 12px; }
+.plan-formulario input, .plan-aporte input, .plan-limite-form input { display: block; min-width: 0; margin-top: 7px; font-size: 16px; padding: 10px 12px; border-color: #d4dfcc; border-radius: 9px; }
+.plan-form-fila { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+.plan-form-fila > label { min-width: 0; }
+.plan-acciones { display: flex; gap: 10px; }
+.plan-error { color: #a33c2c; font-size: 12px; margin: 12px 0; }
+.plan-status { font-size: 12px; color: #3c693a; margin-bottom: 12px; }
+.plan-status:empty { display: none; }
+.plan-aporte { margin-top: 20px; }
+.plan-aporte > div, .plan-limite-form > div { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.plan-aporte input, .plan-limite-form input { width: 110px; flex: 1; margin-top: 0; }
+.plan-aportes { font-size: 11px; margin-top: 16px; color: #526b4c; }
+.plan-aportes summary { cursor: pointer; padding: 8px 0; }
+.plan-aportes ul { list-style: none; padding: 0; margin: 0; }
+.plan-aportes li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid #e3e8da; }
+.plan-aportes li strong { margin-left: auto; }
+.plan-aportes button { min-height: 36px; padding: 8px; background: #f3ece6; color: #8c5e43; border-radius: 7px; font-size: 10px; }
+.plan-vacio { text-align: center; background: #f7f7ef; border: 1px dashed #d5dfc6; padding: 32px 20px; border-radius: 17px; }
+.plan-vacio > svg { width: 42px; height: 42px; color: #74915f; margin-bottom: 12px; }
+.plan-vacio h3 { font-size: 20px; color: #3b5d39; margin-bottom: 10px; }
+.plan-vacio p { margin: 0 auto 18px; color: #66775b; max-width: 45ch; font-size: 12px; }
+.plan-ideas { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+.plan-ideas button { background: #fff; border: 1px solid #dbe4ce; color: #526d43; border-radius: 30px; padding: 10px 14px; min-height: 42px; font-size: 11px; }
+.plan-categoria-titulo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.plan-categoria-titulo h3 { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #3d533c; }
+.plan-categoria-titulo h3 > span { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.plan-categoria-cifras { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; margin: 10px 0 14px; }
+.plan-categoria-cifras strong { color: #355232; font-family: var(--fuente-titulo); font-size: 24px; overflow-wrap: anywhere; }
+.plan-categoria-estado { font-size: 11px; color: #5f7650; margin-top: 9px; }
+.plan-cerca progress::-webkit-progress-value { background: #b78b32; }
+.plan-cerca progress::-moz-progress-bar { background: #b78b32; }
+.plan-exceso progress::-webkit-progress-value { background: #b2634d; }
+.plan-exceso progress::-moz-progress-bar { background: #b2634d; }
+.plan-cerca .plan-categoria-estado { color: #886c26; }
+.plan-exceso .plan-categoria-estado { color: #a34a35; }
+.plan-limite-form { margin-top: 18px; border-top: 1px solid #e1e7d9; padding-top: 15px; }
+.plan-aviso { margin: 16px 0; background: #fff6df; color: #826225; border-radius: 11px; padding: 14px; font-size: 12px; }
+.plan-familiar button:focus-visible, .plan-aportes summary:focus-visible { outline: 2px solid #4e7b44; outline-offset: 3px; }
+@media (max-width: 760px) {
+  .plan-familiar { padding: 20px; }
+  .plan-metas-grid, .plan-categorias-grid { grid-template-columns: minmax(0, 1fr); }
+  .plan-cabecera h2 { font-size: 24px; }
+  .plan-sello { width: 44px; height: 44px; border-radius: 13px; }
+  .plan-eyebrow { font-size: 8px; letter-spacing: 1.2px; }
+  .plan-form-fila { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+@media (max-width: 380px) {
+  .plan-familiar { padding: 16px; }
+  .plan-meta, .plan-categoria, .plan-formulario { padding: 15px; }
+  .plan-vistas > button { font-size: 11px; }
+  .plan-meta-cifras strong { font-size: 25px; }
+  .plan-aporte > div { flex-direction: column; align-items: stretch; }
+  .plan-aporte input { width: 100%; }
+}

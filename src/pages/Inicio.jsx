@@ -4,6 +4,10 @@ import { useMovimientos, usePerfil, calcularResumen } from '../storage.js';
 import { useLocalStorage } from '../hooks/useLocalStorage.js';
 import { formatearSoles, formatearFecha, hoyISO } from '../utils/formatos.js';
 import { obtenerPeriodo } from '../utils/finanzas.js';
+import PanelAnalisis from '../components/PanelAnalisis.jsx';
+import PlanFamiliar from '../components/PlanFamiliar.jsx';
+import GuiaInicial from '../components/GuiaInicial.jsx';
+import { movimientosEjemplo } from '../utils/ejemplo.js';
 import './Inicio.css';
 
 function Flecha({ entrada = false }) {
@@ -66,7 +70,7 @@ function Presupuesto({ gastos, mes }) {
       <div className="inicio-panel-heading">
         <div>
           <span className="inicio-eyebrow">TU PLAN DEL MES</span>
-          <h2 id="presupuesto-titulo">Presupuesto familiar</h2>
+          <h2 id="presupuesto-titulo" tabIndex="-1">Presupuesto familiar</h2>
         </div>
         <span className="inicio-panel-symbol" aria-hidden="true">◎</span>
       </div>
@@ -100,16 +104,14 @@ function Presupuesto({ gastos, mes }) {
 function Inicio() {
   const [movimientos] = useMovimientos();
   const [perfil] = usePerfil();
+  const [presupuesto] = useLocalStorage('finanzas_presupuesto', { monto: 0 });
+  const [metas] = useLocalStorage('finanzas_metas', []);
+  const [verEjemplo, setVerEjemplo] = useState(false);
   const resumen = calcularResumen(movimientos, perfil);
   const hoy = hoyISO();
   const periodo = obtenerPeriodo(perfil.cicloIngreso);
   const mesActual = obtenerPeriodo('mensual');
-  const delCiclo = movimientos.filter((m) => m.fecha >= periodo.inicio && m.fecha <= periodo.fin && m.fecha <= hoy);
   const gastosMes = movimientos.filter((m) => m.tipo === 'gasto' && m.fecha >= mesActual.inicio && m.fecha <= hoy).reduce((suma, m) => suma + Math.round(Number(m.monto) * 100), 0) / 100;
-  const categorias = CATEGORIAS.map((categoria) => {
-    const total = delCiclo.filter((m) => m.tipo === 'gasto' && (m.categoria === categoria.id || (categoria.id === 'otro' && !CATEGORIAS.some((c) => c.id === m.categoria)))).reduce((suma, m) => suma + Math.round(Number(m.monto) * 100), 0) / 100;
-    return { ...categoria, total, porcentaje: resumen.gastos > 0 ? total / resumen.gastos * 100 : 0 };
-  });
   const recientes = [...movimientos].filter((m) => m.fecha <= hoy).sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 4);
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
@@ -121,6 +123,7 @@ function Inicio() {
         <div><span className="inicio-eyebrow">TU FAMILIA, EN ORDEN</span><h1>{saludo},<br /><span>{perfil.nombreFamilia || 'familia'}.</span></h1><p>Cada decisión pequeña cuenta.</p></div>
         <Link className="inicio-avatar" to="/perfil" aria-label="Ver perfil de la familia">{(perfil.nombreFamilia || 'F').charAt(0).toUpperCase()}</Link>
       </header>
+      <GuiaInicial perfil={perfil} movimientos={movimientos} presupuesto={presupuesto} metas={metas} />
       <div className="inicio-periodo"><span className="inicio-periodo-punto" />{CICLOS[perfil.cicloIngreso] || 'Este mes'}<span>{formatearFecha(periodo.inicio)} — {formatearFecha(periodo.fin)}</span></div>
 
       <section className="inicio-balance" aria-labelledby="balance-titulo">
@@ -135,15 +138,13 @@ function Inicio() {
         <section className="inicio-metrica"><span className="inicio-metrica-icono salida" aria-hidden="true"><Flecha /></span><div><span>Gastos del período</span><strong>{formatearSoles(resumen.gastos)}</strong></div></section>
       </div>
 
-      <div className="inicio-grid">
-        <section className="inicio-panel" aria-labelledby="categorias-titulo">
-          <div className="inicio-panel-heading"><div><span className="inicio-eyebrow">CADA SOL TIENE SU LUGAR</span><h2 id="categorias-titulo">¿En qué se va tu plata?</h2></div></div>
-          <p className="inicio-ayuda">Distribución de los gastos de este período.</p>
-          <div className="inicio-categorias-lista">{categorias.map((cat) => <div key={cat.id} className="inicio-categoria-fila"><span className="inicio-categoria-icono" style={{ color: cat.color }} aria-hidden="true">{cat.icono}</span><div className="inicio-categoria-detalle"><div><span>{cat.label}</span><strong>{formatearSoles(cat.total)}</strong></div><div className="inicio-categoria-barra"><span style={{ width: `${Math.min(100, cat.porcentaje)}%`, background: cat.color }} /></div></div><span className="inicio-categoria-porcentaje">{Math.round(cat.porcentaje)}%</span></div>)}</div>
-          {resumen.gastos === 0 && <p className="inicio-ayuda inicio-sin-gastos">Registra tu primer gasto para ver cómo se distribuye.</p>}
-        </section>
-        <Presupuesto gastos={gastosMes} mes={mes} />
-      </div>
+      <section className="inicio-analisis" aria-label="Explorar mis finanzas">
+        <div className="inicio-analisis-switch"><div><span className="inicio-eyebrow">TUS NÚMEROS, CON PERSPECTIVA</span><h2>Descubre cómo se mueve tu dinero</h2></div><button className="inicio-btn inicio-btn-suave" aria-pressed={verEjemplo} onClick={() => setVerEjemplo(!verEjemplo)}>{verEjemplo ? 'Volver a mis datos' : 'Ver ejemplo'}</button></div>
+        {verEjemplo && <p className="inicio-demo-aviso" role="status">Estás explorando datos de ejemplo. Solo cambian estos gráficos; tus registros y planes se conservan.</p>}
+        <PanelAnalisis key={verEjemplo ? 'ejemplo' : 'real'} movimientos={verEjemplo ? movimientosEjemplo() : movimientos} demo={verEjemplo} />
+      </section>
+      <Presupuesto gastos={gastosMes} mes={mes} />
+      <PlanFamiliar />
 
       <section className="inicio-panel inicio-recientes" aria-labelledby="recientes-titulo">
         <div className="inicio-panel-heading"><div><span className="inicio-eyebrow">PASO A PASO</span><h2 id="recientes-titulo">Últimos movimientos</h2></div><Link to="/mi-plata" className="inicio-text-link">Ver todos <span aria-hidden="true"><Flecha /></span></Link></div>

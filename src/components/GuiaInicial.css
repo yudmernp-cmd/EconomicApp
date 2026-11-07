@@ -1,0 +1,14 @@
+.guia-inicial{background:#edf1e5;border:1px solid #dce4d3;border-radius:20px;padding:22px}
+.guia-encabezado{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.guia-encabezado h2{margin-bottom:6px;font-size:21px}.guia-encabezado p{font-size:12px;color:#596a52}
+.guia-encabezado>button,.guia-mostrar{background:transparent;color:#45613d;padding:8px;font-size:12px;min-height:40px}
+.guia-mostrar{text-align:left;justify-self:start;text-decoration:underline;text-underline-offset:4px}
+.guia-avance{display:flex;align-items:center;gap:12px;margin:18px 0;font-size:11px;color:#4e6246}
+.guia-avance progress{appearance:none;width:150px;height:6px;accent-color:#527b44;border:0;border-radius:8px;overflow:hidden}
+.guia-avance progress::-webkit-progress-bar{background:#d6dfcd}.guia-avance progress::-webkit-progress-value{background:#527b44}.guia-avance progress::-moz-progress-bar{background:#527b44}
+.guia-pasos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.guia-pasos>a,.guia-pasos>button{display:flex;align-items:center;gap:10px;background:#ffffffa8;border:1px solid #dce4d3;border-radius:12px;padding:12px;text-align:left;color:#294b34;text-decoration:none;min-width:0}
+.guia-pasos strong{display:block;font-size:12px}.guia-pasos small{display:block;font-size:10px;font-weight:400;color:#5a6c54;margin-top:3px}
+.guia-numero{flex:none;display:grid;place-items:center;width:26px;height:26px;border:1px solid #c9d5c0;border-radius:50%;font-size:12px}.guia-numero.listo{background:#24543a;color:#fff;border-color:#24543a}
+@media(max-width:1100px){.guia-pasos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:360px){.guia-inicial{padding:16px}.guia-pasos>a,.guia-pasos>button{padding:10px;gap:7px}.guia-pasos small{display:none}}

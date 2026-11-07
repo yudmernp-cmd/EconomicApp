@@ -1,4 +1,4 @@
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 
 const EVENTO = 'finanzas-storage';
 
@@ -36,6 +36,7 @@ export function useLocalStorage(clave, valorInicial) {
   }, [clave]);
   const instantanea = useCallback(() => leer(clave), [clave]);
   const texto = useSyncExternalStore(suscribir, instantanea, () => null);
+  const valor = useMemo(() => interpretar(texto, inicial), [texto, inicial]);
   const setValor = useCallback((actualizar) => {
     const previo = interpretar(leer(clave), inicial);
     const siguiente = typeof actualizar === 'function' ? actualizar(previo) : actualizar;
@@ -46,5 +47,5 @@ export function useLocalStorage(clave, valorInicial) {
     }
     window.dispatchEvent(new CustomEvent(EVENTO, { detail: clave }));
   }, [clave, inicial]);
-  return [interpretar(texto, inicial), setValor];
+  return [valor, setValor];
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePerfil, useMovimientos, useDeudas } from '../storage.js';
 import { useAuth } from '../context/auth.js';
+import { useLocalStorage } from '../hooks/useLocalStorage.js';
 import Card from '../components/Card.jsx';
 import './Perfil.css';
 
@@ -13,6 +14,11 @@ function Perfil() {
   const [perfil, setPerfil] = usePerfil();
   const [, setMovimientos] = useMovimientos();
   const [, setDeudas] = useDeudas();
+  const [, setMetas] = useLocalStorage('finanzas_metas', []);
+  const [, setCategorias] = useLocalStorage('finanzas_presupuestos_categoria', {});
+  const [, setGuia] = useLocalStorage('finanzas_guia_oculta', false);
+  const [, setPresupuesto] = useLocalStorage('finanzas_presupuesto', { monto: 0 });
+  const [, setLecciones] = useLocalStorage('finanzas_lecciones_vistas', []);
   const [guardado, setGuardado] = useState(false);
   const { usuario, cerrarSesion } = useAuth();
   const [form, setForm] = useState(perfil);
@@ -31,10 +37,11 @@ function Perfil() {
 
   const borrarTodo = () => {
     if (confirm('¿Borrar TODOS tus datos? Esto no se puede deshacer.')) {
-      setMovimientos([]); setDeudas([]);
-      localStorage.removeItem('finanzas_lecciones_vistas');
-      localStorage.removeItem('finanzas_presupuesto');
-      alert('Datos borrados.');
+      try {
+        setMovimientos([]); setDeudas([]); setMetas([]); setCategorias({});
+        setPresupuesto({ monto: 0 }); setLecciones([]); setGuia(false);
+        alert('Registros, presupuestos, metas y lecciones borrados. Se conserva el perfil familiar.');
+      } catch (error) { alert(error.message); }
     }
   };
 
@@ -157,10 +164,10 @@ function Perfil() {
         <button className="perfil-btn-peligro" onClick={borrarTodo}>
           Borrar todos mis datos locales
         </button>
-        <p className="perfil-advertencia">Esto eliminará movimientos, deudas y lecciones guardadas en este dispositivo.</p>
+        <p className="perfil-advertencia">Esto eliminará movimientos, deudas, metas, aportes, presupuestos y lecciones de este navegador. Se conserva el perfil familiar.</p>
       </Card>
       
-      <p className="perfil-version">Cuadra tus Lucas · v1.0</p>
+      <p className="perfil-version">Cuadra tus Lucas · v2.0</p>
     </div>
   );
 }

@@ -10,8 +10,15 @@ Aplicación de finanzas familiares en soles, construida con React y Vite.
 - Descarga CSV de los movimientos filtrados, compatible con importes en centavos.
 - Simulador de préstamos, lecciones y perfil familiar.
 - Navegación inferior en móvil y barra lateral en escritorio.
+- Gráficos interactivos de categorías, ingresos/gastos y evolución del saldo del período, con rangos personalizados.
+- Comparación del gasto mensual con el mismo tramo del mes anterior.
+- Metas de ahorro con aportes, fechas objetivo y progreso; presupuestos mensuales por categoría.
+- Guía de primeros pasos y vista de ejemplo de los gráficos, separada del historial real.
+- Asistente con respuestas rápidas basadas en tus registros y consultas abiertas mediante Gemini.
 
 Los movimientos, el perfil, las deudas y el presupuesto se conservan en este navegador mediante localStorage. Los cambios se sincronizan entre componentes y pestañas del mismo origen. La descarga CSV permite conservar una copia del historial; no hay sincronización de estos datos con Supabase.
+
+Las metas, sus aportes y los límites por categoría también se guardan localmente. Un aporte registra dinero que apartaste: no crea un ingreso ni un gasto y no se descuenta automáticamente del balance. Los gráficos de ejemplo son solo una demostración y nunca se guardan como movimientos. Las respuestas rápidas del asistente se calculan en el dispositivo; las consultas abiertas requieren el endpoint `/api/chat` y su configuración en Vercel.
 
 ## Desarrollo
 
